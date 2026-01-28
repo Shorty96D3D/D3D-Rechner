@@ -63,7 +63,7 @@
             <input type="text" id="new_name" placeholder="z.B. PLA Schwarz">
             <div class="grid">
                 <div><label>Preis (€/kg)</label><input type="number" id="new_price" step="0.01" placeholder="25.00"></div>
-                <div><label>Bestand (g)</label><input type="number" id="new_stock" placeholder="1000"></div>
+                <div><label>Bestand (gramm)</label><input type="number" id="new_stock" placeholder="1000"></div>
             </div>
             <button class="btn-add" onclick="addMaterial()">+ Material hinzufügen</button>
         </div>
@@ -73,20 +73,30 @@
             
             <label>Hauptmaterial:</label>
             <select id="calc_mat_select"></select>
-            <label>Verbrauch Hauptmaterial (g):</label>
+            <label>Verbrauch Hauptmaterial (gramm):</label>
             <input type="number" id="calc_g" placeholder="z.B. 85">
 
-            <label class="support-label">Zweitmaterial (Support):</label>
+            <label class="support-label">Material 2 (z.B.-Support):</label>
             <select id="calc_support_select"></select>
-            <label class="support-label">Verbrauch Support (g):</label>
+            <label class="support-label">Verbrauch (gramm):</label>
             <input type="number" id="calc_support_g" placeholder="0" value="0">
-            
+
+            <label class="support-label">Material 3:</label>
+            <select id="calc_support_select"></select>
+            <label class="support-label">Verbrauch (gramm):</label>
+            <input type="number" id="calc_support_g" placeholder="0" value="0">
+
+            <label class="support-label">Material 4:</label>
+            <select id="calc_support_select"></select>
+            <label class="support-label">Verbrauch (gramm):</label>
+            <input type="number" id="calc_support_g" placeholder="0" value="0">
+
             <div class="grid">
                 <div><label>Druckzeit Gesamt (h)</label><input type="number" id="calc_h" placeholder="4"></div>
                 <div><label>Arbeitszeit (min)</label><input type="number" id="calc_min" placeholder="15"></div>
             </div>
             <label>Stundenlohn (€/h)</label>
-            <input type="number" id="calc_wage" value="30">
+            <input type="number" id="calc_wage" value="20">
             
             <button class="btn-calc" onclick="calculate(false)">Nur Preis berechnen</button>
             <button class="btn-order" onclick="calculate(true)">Auftrag bestätigen & Abbuchen</button>
@@ -260,3 +270,4 @@
     </script>
 </body>
 </html>
+
