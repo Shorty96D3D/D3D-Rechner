@@ -19,7 +19,12 @@
         .btn-order { background: #28a745; color: white; }
         .btn-add { background: #007bff; font-size: 13px; padding: 8px; }
         
-        .inventory-item { background: #2a2a2a; padding: 10px; border-radius: 8px; margin-bottom: 8px; display: flex; align-items: center; font-size: 13px; border-left: 4px solid #007bff; }
+        .inventory-item { background: #2a2a2a; padding: 10px; border-radius: 8px; margin-bottom: 8px; display: flex; align-items: center; font-size: 13px; border-left: 4px solid #007bff; transition: 0.2s; }
+        
+        /* WARN-STYLING */
+        .low-stock { border-left-color: #ff4444 !important; }
+        .low-stock-text { color: #ff4444 !important; font-weight: bold; }
+
         .item-info { flex-grow: 1; }
         .item-actions { display: flex; gap: 8px; align-items: center; }
         .refill-btn { background-color: #007bff; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
@@ -84,7 +89,7 @@
                 <div><label>Arbeit (min)</label><input type="number" id="calc_min" placeholder="15"></div>
             </div>
             <label>Stundenlohn (€/h)</label>
-            <input type="number" id="calc_wage" value="20">
+            <input type="number" id="calc_wage" value="30">
             
             <button class="btn-calc" onclick="calculate(false)">Nur Preis berechnen</button>
             <button class="btn-order" onclick="calculate(true)">Auftrag bestätigen & Abbuchen</button>
@@ -122,9 +127,20 @@
             inventory.forEach((item, index) => {
                 const isLow = item.stock < 100;
                 const div = document.createElement('div');
-                div.className = 'inventory-item' + (isLow ? ' style="border-left-color:#ff4444"' : '');
-                div.innerHTML = `<div class="item-info"><strong>${item.name}</strong><br>${item.stock}g (${item.price}€/kg)</div>
-                    <div class="item-actions"><button class="refill-btn" onclick="refillItem(${index})">+</button><button class="delete-btn" onclick="deleteItem(${index})">X</button></div>`;
+                
+                // Klassen für Warnung hinzufügen
+                div.className = 'inventory-item' + (isLow ? ' low-stock' : '');
+                
+                div.innerHTML = `
+                    <div class="item-info">
+                        <strong class="${isLow ? 'low-stock-text' : ''}">${item.name}</strong> 
+                        ${isLow ? '<span class="low-stock-text">⚠️!</span>' : ''}<br>
+                        <span class="${isLow ? 'low-stock-text' : ''}">${item.stock}g (${item.price}€/kg)</span>
+                    </div>
+                    <div class="item-actions">
+                        <button class="refill-btn" onclick="refillItem(${index})">+</button>
+                        <button class="delete-btn" onclick="deleteItem(${index})">X</button>
+                    </div>`;
                 list.appendChild(div);
 
                 selects.forEach(s => s.options.add(new Option(`${item.name} (${item.stock}g)`, index)));
@@ -226,4 +242,3 @@
     </script>
 </body>
 </html>
-
