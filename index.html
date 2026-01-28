@@ -1,59 +1,88 @@
 <!DOCTYPE html>
-<html>
+<html lang="de">
 <head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>3D-Druck Kalkulator</title>
+    <title>D3D Kalkulator</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; background: #f4f4f9; }
-        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        button { width: 100%; padding: 15px; background: #007bff; color: white; border: none; border-radius: 5px; font-size: 16px; }
-        .result { margin-top: 20px; font-weight: bold; color: #333; }
+        body { font-family: sans-serif; padding: 15px; background: #f0f2f5; color: #333; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
+        h2 { color: #007bff; text-align: center; margin-top: 0; }
+        h3 { font-size: 14px; border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-top: 20px; color: #666; }
+        label { display: block; margin-top: 10px; font-size: 13px; font-weight: bold; }
+        input { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 16px; }
+        .settings { background: #f9f9f9; padding: 10px; border-radius: 8px; margin-bottom: 20px; border: 1px dashed #bbb; }
+        button { width: 100%; padding: 15px; background: #28a745; color: white; border: none; border-radius: 6px; font-size: 18px; font-weight: bold; margin-top: 20px; cursor: pointer; }
+        .result { margin-top: 20px; padding: 15px; background: #e9ecef; border-radius: 8px; text-align: center; }
+        .total { font-size: 22px; color: #28a745; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="card">
-        <h2>D3D-Druck Rechner</h2>
-        <label>Gewicht (g):</label>
-        <input type="number" id="gramm" placeholder="z.B. 150">
+        <h2>D3D Kalkulator</h2>
+
+        <div class="settings">
+            <h3>⚙️ Stammdaten (werden gespeichert)</h3>
+            <label>Filamentpreis (€/kg):</label>
+            <input type="number" id="base_filament" step="0.01" onchange="saveData()">
+            <label>Strompreis (€/kWh):</label>
+            <input type="number" id="base_strom" step="0.01" onchange="saveData()">
+            <label>Stundensatz Arbeit (€/h):</label>
+            <input type="number" id="base_lohn" step="0.01" onchange="saveData()">
+        </div>
+
+        <h3>📦 Druck-Details</h3>
+        <label>Gewicht laut Slicer (g):</label>
+        <input type="number" id="gramm" placeholder="z.B. 120">
         
         <label>Druckzeit (Std):</label>
-        <input type="number" id="stunden" placeholder="z.B. 4.5">
+        <input type="number" id="stunden" placeholder="z.B. 5.5">
         
-        <label>Arbeitszeit (Min):</label>
-        <input type="number" id="arbeit" placeholder="z.B. 15">
-        
-        <button onclick="calculate()">Berechnen</button>
+        <label>Arbeitszeit (Minuten):</label>
+        <input type="number" id="arbeit_min" placeholder="Slicen, Nachbearbeitung">
 
-        <div class="result" id="output"></div>
+        <button onclick="calculate()">Preis berechnen</button>
+
+        <div class="result" id="resBox" style="display:none;">
+            <span>Empfohlener Verkaufspreis:</span><br>
+            <span class="total" id="totalPrice">0,00 €</span>
+        </div>
     </div>
 
     <script>
+        // Funktion zum Speichern der Stammdaten im Handy-Browser
+        function saveData() {
+            localStorage.setItem('f_price', document.getElementById('base_filament').value);
+            localStorage.setItem('s_price', document.getElementById('base_strom').value);
+            localStorage.setItem('l_price', document.getElementById('base_lohn').value);
+        }
+
+        // Beim Laden der Seite alte Werte abrufen
+        window.onload = function() {
+            document.getElementById('base_filament').value = localStorage.getItem('f_price') || 25.00;
+            document.getElementById('base_strom').value = localStorage.getItem('s_price') || 0.40;
+            document.getElementById('base_lohn').value = localStorage.getItem('l_price') || 30.00;
+        }
+
         function calculate() {
-            // Deine Stammdaten
-            const preisProKg = 25; 
-            const stromKwh = 0.40;
-            const watt = 0.15; // 150W Durchschnitt
-            const stundenlohn = 30;
-            const verschleissProStd = 0.50;
-            const risiko = 1.15; // 15% Aufschlag
+            let fPrice = parseFloat(document.getElementById('base_filament').value) || 0;
+            let sPrice = parseFloat(document.getElementById('base_strom').value) || 0;
+            let lPrice = parseFloat(document.getElementById('base_lohn').value) || 0;
 
-            let g = document.getElementById('gramm').value;
-            let h = document.getElementById('stunden').value;
-            let min = document.getElementById('arbeit').value;
+            let g = parseFloat(document.getElementById('gramm').value) || 0;
+            let h = parseFloat(document.getElementById('stunden').value) || 0;
+            let min = parseFloat(document.getElementById('arbeit_min').value) || 0;
 
-            let material = (g / 1000) * preisProKg;
-            let strom = h * watt * stromKwh;
-            let abnutzung = h * verschleissProStd;
-            let arbeit = (min / 60) * stundenlohn;
+            // Kalkulations-Logik
+            let matKosten = (g / 1000) * fPrice;
+            let stromKosten = h * 0.15 * sPrice; // 0.15kW Schnitt f. Bambu
+            let verschleiss = h * 0.50; // 0,50€ Fix pro Stunde
+            let arbeitsKosten = (min / 60) * lPrice;
 
-            let gesamt = (material + strom + abnutzung + arbeit) * risiko;
+            let gesamt = (matKosten + stromKosten + verschleiss + arbeitsKosten) * 1.15; // 15% Risikopuffer
 
-            document.getElementById('output').innerHTML = 
-                "Material: " + material.toFixed(2) + " €<br>" +
-                "Arbeit: " + arbeit.toFixed(2) + " €<br>" +
-                "------------------<br>" +
-                "Endpreis (inkl. Risiko): " + gesamt.toFixed(2) + " €";
+            document.getElementById('totalPrice').innerText = gesamt.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
+            document.getElementById('resBox').style.display = 'block';
         }
     </script>
 </body>
