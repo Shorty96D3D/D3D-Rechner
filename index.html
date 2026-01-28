@@ -38,6 +38,12 @@
         .refill-btn { background-color: #007bff; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .delete-btn { background-color: #ff4444 !important; color: white !important; font-weight: bold; border: none; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; flex-shrink: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
         
+        /* Historie Styles */
+        .history-list { margin-top: 10px; max-height: 200px; overflow-y: auto; }
+        .history-item { font-size: 12px; padding: 8px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
+        .history-item:last-child { border-bottom: none; }
+        .history-date { color: #888; font-size: 10px; }
+
         .total-box { margin-top: 15px; padding: 15px; background: #121212; border-radius: 8px; text-align: center; border: 1px solid #00d4ff; }
         .price-tag { font-size: 26px; color: #00d4ff; font-weight: bold; display: block; }
         .success-msg { color: #28a745; font-size: 12px; margin-top: 5px; font-weight: bold; display: none; }
@@ -67,12 +73,12 @@
             
             <label>Hauptmaterial:</label>
             <select id="calc_mat_select"></select>
-            <label>Verbrauch Hauptmaterial (gramm):</label>
+            <label>Verbrauch Hauptmaterial (g):</label>
             <input type="number" id="calc_g" placeholder="z.B. 85">
 
             <label class="support-label">Zweitmaterial (Support):</label>
             <select id="calc_support_select"></select>
-            <label class="support-label">Verbrauch Support (gramm):</label>
+            <label class="support-label">Verbrauch Support (g):</label>
             <input type="number" id="calc_support_g" placeholder="0" value="0">
             
             <div class="grid">
@@ -91,15 +97,25 @@
             <span style="color: #888; font-size: 12px;">GESAMT-ANGEBOTSPREIS:</span>
             <span id="total_price" class="price-tag">0,00 €</span>
         </div>
+
+        <div class="section">
+            <h3>📜 Letzte Aufträge</h3>
+            <div id="history-list" class="history-list">
+                <div style="color: #666; font-size: 12px; text-align: center; padding: 10px;">Noch keine Aufträge gebucht.</div>
+            </div>
+            <button onclick="clearHistory()" style="background: none; color: #ff4444; font-size: 10px; padding: 5px; margin-top: 10px; width: auto; font-weight: normal;">Historie löschen</button>
+        </div>
     </div>
 
     <script>
         let inventory = JSON.parse(localStorage.getItem('d3d_inv')) || [];
+        let history = JSON.parse(localStorage.getItem('d3d_history')) || [];
 
         function updateUI() {
             const list = document.getElementById('inventory-list');
             const mainSelect = document.getElementById('calc_mat_select');
             const supportSelect = document.getElementById('calc_support_select');
+            const histList = document.getElementById('history-list');
             
             list.innerHTML = '';
             mainSelect.innerHTML = '';
@@ -107,16 +123,14 @@
             
             let totalVal = 0;
 
+            // Lagerliste & Dropdowns
             inventory.forEach((item, index) => {
                 const isLow = item.stock < 100;
-                
-                // Lagerliste
                 const div = document.createElement('div');
                 div.className = 'inventory-item' + (isLow ? ' low-stock' : '');
                 div.innerHTML = `
                     <div class="item-info">
-                        <strong class="${isLow ? 'low-stock-text' : ''}">${item.name}</strong> 
-                        ${isLow ? '<span class="low-stock-text">⚠️!</span>' : ''}<br>
+                        <strong class="${isLow ? 'low-stock-text' : ''}">${item.name}</strong><br>
                         ${item.stock}g (${item.price}€/kg)
                     </div>
                     <div class="item-actions">
@@ -126,7 +140,6 @@
                 `;
                 list.appendChild(div);
 
-                // Select-Boxen füllen
                 const optText = `${item.name} (${item.stock}g)`;
                 mainSelect.options.add(new Option(optText, index));
                 supportSelect.options.add(new Option(optText, index));
@@ -134,8 +147,26 @@
                 totalVal += (item.stock / 1000) * item.price;
             });
 
+            // Historie Liste
+            if (history.length > 0) {
+                histList.innerHTML = '';
+                history.slice().reverse().forEach(entry => {
+                    const hDiv = document.createElement('div');
+                    hDiv.className = 'history-item';
+                    hDiv.innerHTML = `
+                        <div>
+                            <strong>${entry.mat}</strong><br>
+                            <span class="history-date">${entry.date}</span>
+                        </div>
+                        <div style="color: #00d4ff; font-weight: bold;">${entry.price}</div>
+                    `;
+                    histList.appendChild(hDiv);
+                });
+            }
+
             document.getElementById('warehouse-value').innerText = `Warenwert Lager: ${totalVal.toFixed(2)} €`;
             localStorage.setItem('d3d_inv', JSON.stringify(inventory));
+            localStorage.setItem('d3d_history', JSON.stringify(history));
         }
 
         function addMaterial() {
@@ -166,6 +197,13 @@
             }
         }
 
+        function clearHistory() {
+            if(confirm("Gesamte Historie löschen?")) {
+                history = [];
+                updateUI();
+            }
+        }
+
         function calculate(doDeduct) {
             const mainIdx = document.getElementById('calc_mat_select').value;
             const supportIdx = document.getElementById('calc_support_select').value;
@@ -179,31 +217,38 @@
             const min = parseFloat(document.getElementById('calc_min').value) || 0;
             const wage = parseFloat(document.getElementById('calc_wage').value) || 30;
 
-            // Kosten berechnen
             let matCosts = (mainG / 1000) * mainMat.price;
-            
             if(supportIdx !== "") {
-                const supportMat = inventory[supportIdx];
-                matCosts += (supportG / 1000) * supportMat.price;
+                matCosts += (supportG / 1000) * inventory[supportIdx].price;
             }
 
             let energy = h * 0.15 * 0.40; 
             let wear = h * 0.60; 
             let labor = (min / 60) * wage;
-            let total = (matCosts + energy + wear + labor) * 1.15; // 15% Puffer/Gewinn
+            let total = (matCosts + energy + wear + labor) * 1.15;
 
-            document.getElementById('total_price').innerText = total.toLocaleString('de-DE', {style:'currency', currency:'EUR'});
+            const formattedPrice = total.toLocaleString('de-DE', {style:'currency', currency:'EUR'});
+            document.getElementById('total_price').innerText = formattedPrice;
             document.getElementById('res').style.display = 'block';
 
             if(doDeduct) {
-                // Abbuchen Hauptmaterial
+                // Abbuchen
                 inventory[mainIdx].stock = Math.max(0, inventory[mainIdx].stock - mainG);
-                
-                // Abbuchen Support (falls gewählt)
                 if(supportIdx !== "") {
                     inventory[supportIdx].stock = Math.max(0, inventory[supportIdx].stock - supportG);
                 }
                 
+                // Historie speichern
+                const now = new Date();
+                history.push({
+                    mat: mainMat.name,
+                    price: formattedPrice,
+                    date: now.toLocaleDateString('de-DE') + ' ' + now.toLocaleTimeString('de-DE', {hour: '2-digit', minute:'2-digit'})
+                });
+                
+                // Nur die letzten 20 Aufträge behalten
+                if(history.length > 20) history.shift();
+
                 updateUI();
                 const msg = document.getElementById('order-success');
                 msg.style.display = 'block';
@@ -215,4 +260,3 @@
     </script>
 </body>
 </html>
-
