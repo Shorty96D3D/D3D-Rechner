@@ -19,35 +19,20 @@
         .btn-order { background: #28a745; color: white; }
         .btn-add { background: #007bff; font-size: 13px; padding: 8px; }
         
-        .inventory-item { 
-            background: #2a2a2a; 
-            padding: 10px; 
-            border-radius: 8px; 
-            margin-bottom: 8px; 
-            display: flex; 
-            align-items: center; 
-            font-size: 13px; 
-            border-left: 4px solid #007bff; 
-        }
-        
+        .inventory-item { background: #2a2a2a; padding: 10px; border-radius: 8px; margin-bottom: 8px; display: flex; align-items: center; font-size: 13px; border-left: 4px solid #007bff; }
         .item-info { flex-grow: 1; }
-        .low-stock { border-left: 4px solid #ff4444 !important; }
-        .low-stock-text { color: #ff4444; font-weight: bold; }
-        
         .item-actions { display: flex; gap: 8px; align-items: center; }
         .refill-btn { background-color: #007bff; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .delete-btn { background-color: #ff4444 !important; color: white !important; font-weight: bold; border: none; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; flex-shrink: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+        .delete-btn { background-color: #ff4444 !important; color: white !important; border: none; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         
-        /* Historie Styles */
-        .history-list { margin-top: 10px; max-height: 200px; overflow-y: auto; }
-        .history-item { font-size: 12px; padding: 8px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
-        .history-item:last-child { border-bottom: none; }
+        .history-list { margin-top: 10px; max-height: 250px; overflow-y: auto; }
+        .history-item { font-size: 12px; padding: 10px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; background: #2a2a2a; margin-bottom: 4px; border-radius: 4px; }
         .history-date { color: #888; font-size: 10px; }
 
         .total-box { margin-top: 15px; padding: 15px; background: #121212; border-radius: 8px; text-align: center; border: 1px solid #00d4ff; }
         .price-tag { font-size: 26px; color: #00d4ff; font-weight: bold; display: block; }
         .success-msg { color: #28a745; font-size: 12px; margin-top: 5px; font-weight: bold; display: none; }
-        .support-label { color: #e67e22 !important; }
+        .multi-label { color: #aaa !important; font-size: 10px !important; margin-top: 4px !important; }
     </style>
 </head>
 <body>
@@ -63,44 +48,47 @@
             <input type="text" id="new_name" placeholder="z.B. PLA Schwarz">
             <div class="grid">
                 <div><label>Preis (€/kg)</label><input type="number" id="new_price" step="0.01" placeholder="25.00"></div>
-                <div><label>Bestand (gramm)</label><input type="number" id="new_stock" placeholder="1000"></div>
+                <div><label>Bestand (g)</label><input type="number" id="new_stock" placeholder="1000"></div>
             </div>
             <button class="btn-add" onclick="addMaterial()">+ Material hinzufügen</button>
         </div>
 
         <div class="section">
-            <h3>🚀 Kombi-Kalkulation</h3>
+            <h3>🚀 Projekt-Kalkulation</h3>
             
-            <label>Hauptmaterial:</label>
-            <select id="calc_mat_select"></select>
-            <label>Verbrauch Hauptmaterial (gramm):</label>
-            <input type="number" id="calc_g" placeholder="z.B. 85">
+            <label>Projektname / Kunde:</label>
+            <input type="text" id="calc_project_name" placeholder="z.B. Huber - Rahmenhalter">
 
-            <label class="support-label">Material 2 (z.B.-Support):</label>
-            <select id="calc_support_select"></select>
-            <label class="support-label">Verbrauch (gramm):</label>
-            <input type="number" id="calc_support_g" placeholder="0" value="0">
-
-            <label class="support-label">Material 3:</label>
-            <select id="calc_support_select"></select>
-            <label class="support-label">Verbrauch (gramm):</label>
-            <input type="number" id="calc_support_g" placeholder="0" value="0">
-
-            <label class="support-label">Material 4:</label>
-            <select id="calc_support_select"></select>
-            <label class="support-label">Verbrauch (gramm):</label>
-            <input type="number" id="calc_support_g" placeholder="0" value="0">
-
+            <label>Material 1 (Haupt):</label>
             <div class="grid">
-                <div><label>Druckzeit Gesamt (h)</label><input type="number" id="calc_h" placeholder="4"></div>
-                <div><label>Arbeitszeit (min)</label><input type="number" id="calc_min" placeholder="15"></div>
+                <select id="mat_0"></select>
+                <input type="number" id="gram_0" placeholder="Gramm">
+            </div>
+
+            <label class="multi-label">Zusatzmaterialien (Multicolor/Support):</label>
+            <div class="grid" style="margin-bottom: 4px;">
+                <select id="mat_1"></select>
+                <input type="number" id="gram_1" placeholder="Gramm">
+            </div>
+            <div class="grid" style="margin-bottom: 4px;">
+                <select id="mat_2"></select>
+                <input type="number" id="gram_2" placeholder="Gramm">
+            </div>
+            <div class="grid">
+                <select id="mat_3"></select>
+                <input type="number" id="gram_3" placeholder="Gramm">
+            </div>
+            
+            <div class="grid">
+                <div><label>Druckzeit (h)</label><input type="number" id="calc_h" placeholder="4"></div>
+                <div><label>Arbeit (min)</label><input type="number" id="calc_min" placeholder="15"></div>
             </div>
             <label>Stundenlohn (€/h)</label>
-            <input type="number" id="calc_wage" value="20">
+            <input type="number" id="calc_wage" value="30">
             
             <button class="btn-calc" onclick="calculate(false)">Nur Preis berechnen</button>
             <button class="btn-order" onclick="calculate(true)">Auftrag bestätigen & Abbuchen</button>
-            <div id="order-success" class="success-msg">✅ Bestände wurden abgebucht!</div>
+            <div id="order-success" class="success-msg">✅ Auftrag gebucht & Bestände korrigiert!</div>
         </div>
 
         <div id="res" class="total-box" style="display:none;">
@@ -109,9 +97,9 @@
         </div>
 
         <div class="section">
-            <h3>📜 Letzte Aufträge</h3>
+            <h3>📜 Historie</h3>
             <div id="history-list" class="history-list">
-                <div style="color: #666; font-size: 12px; text-align: center; padding: 10px;">Noch keine Aufträge gebucht.</div>
+                <div style="color: #666; font-size: 12px; text-align: center; padding: 10px;">Noch keine Einträge.</div>
             </div>
             <button onclick="clearHistory()" style="background: none; color: #ff4444; font-size: 10px; padding: 5px; margin-top: 10px; width: auto; font-weight: normal;">Historie löschen</button>
         </div>
@@ -123,53 +111,33 @@
 
         function updateUI() {
             const list = document.getElementById('inventory-list');
-            const mainSelect = document.getElementById('calc_mat_select');
-            const supportSelect = document.getElementById('calc_support_select');
+            const selects = [document.getElementById('mat_0'), document.getElementById('mat_1'), document.getElementById('mat_2'), document.getElementById('mat_3')];
             const histList = document.getElementById('history-list');
             
             list.innerHTML = '';
-            mainSelect.innerHTML = '';
-            supportSelect.innerHTML = '<option value="">-- Kein Support --</option>';
+            selects.forEach(s => s.innerHTML = '<option value="">-- Wählen --</option>');
             
             let totalVal = 0;
 
-            // Lagerliste & Dropdowns
             inventory.forEach((item, index) => {
                 const isLow = item.stock < 100;
                 const div = document.createElement('div');
-                div.className = 'inventory-item' + (isLow ? ' low-stock' : '');
-                div.innerHTML = `
-                    <div class="item-info">
-                        <strong class="${isLow ? 'low-stock-text' : ''}">${item.name}</strong><br>
-                        ${item.stock}g (${item.price}€/kg)
-                    </div>
-                    <div class="item-actions">
-                        <button class="refill-btn" onclick="refillItem(${index})">+</button>
-                        <button class="delete-btn" onclick="deleteItem(${index})">X</button>
-                    </div>
-                `;
+                div.className = 'inventory-item' + (isLow ? ' style="border-left-color:#ff4444"' : '');
+                div.innerHTML = `<div class="item-info"><strong>${item.name}</strong><br>${item.stock}g (${item.price}€/kg)</div>
+                    <div class="item-actions"><button class="refill-btn" onclick="refillItem(${index})">+</button><button class="delete-btn" onclick="deleteItem(${index})">X</button></div>`;
                 list.appendChild(div);
 
-                const optText = `${item.name} (${item.stock}g)`;
-                mainSelect.options.add(new Option(optText, index));
-                supportSelect.options.add(new Option(optText, index));
-
+                selects.forEach(s => s.options.add(new Option(`${item.name} (${item.stock}g)`, index)));
                 totalVal += (item.stock / 1000) * item.price;
             });
 
-            // Historie Liste
             if (history.length > 0) {
                 histList.innerHTML = '';
                 history.slice().reverse().forEach(entry => {
                     const hDiv = document.createElement('div');
                     hDiv.className = 'history-item';
-                    hDiv.innerHTML = `
-                        <div>
-                            <strong>${entry.mat}</strong><br>
-                            <span class="history-date">${entry.date}</span>
-                        </div>
-                        <div style="color: #00d4ff; font-weight: bold;">${entry.price}</div>
-                    `;
+                    hDiv.innerHTML = `<div><strong>${entry.project || 'Unbenanntes Projekt'}</strong><br><span style="font-size:10px; color:#aaa">${entry.mat}</span><br><span class="history-date">${entry.date}</span></div>
+                                      <div style="color: #00d4ff; font-weight: bold;">${entry.price}</div>`;
                     histList.appendChild(hDiv);
                 });
             }
@@ -183,8 +151,8 @@
             const name = document.getElementById('new_name').value;
             const price = parseFloat(document.getElementById('new_price').value);
             const stock = parseFloat(document.getElementById('new_stock').value);
-            if(name && !isNaN(price) && !isNaN(stock)) {
-                inventory.push({name, price, stock});
+            if(name && !isNaN(price)) {
+                inventory.push({name, price, stock: stock || 0});
                 document.getElementById('new_name').value = '';
                 document.getElementById('new_price').value = '';
                 document.getElementById('new_stock').value = '';
@@ -193,44 +161,36 @@
         }
 
         function refillItem(index) {
-            const amount = prompt(`Menge hinzufügen für "${inventory[index].name}" (in Gramm):`, "1000");
-            if (amount !== null && !isNaN(amount)) {
-                inventory[index].stock += parseFloat(amount);
-                updateUI();
-            }
+            const amount = prompt(`Menge für ${inventory[index].name} (g):`, "1000");
+            if (amount) { inventory[index].stock += parseFloat(amount); updateUI(); }
         }
 
         function deleteItem(index) {
-            if(confirm(`"${inventory[index].name}" wirklich löschen?`)) {
-                inventory.splice(index, 1);
-                updateUI();
-            }
-        }
-
-        function clearHistory() {
-            if(confirm("Gesamte Historie löschen?")) {
-                history = [];
-                updateUI();
-            }
+            if(confirm("Material löschen?")) { inventory.splice(index, 1); updateUI(); }
         }
 
         function calculate(doDeduct) {
-            const mainIdx = document.getElementById('calc_mat_select').value;
-            const supportIdx = document.getElementById('calc_support_select').value;
-            
-            if(mainIdx === "") return alert("Bitte Hauptmaterial wählen!");
+            let matCosts = 0;
+            let usedMatsInfo = [];
+            let deductionList = [];
 
-            const mainMat = inventory[mainIdx];
-            const mainG = parseFloat(document.getElementById('calc_g').value) || 0;
-            const supportG = parseFloat(document.getElementById('calc_support_g').value) || 0;
+            for(let i=0; i<4; i++) {
+                const idx = document.getElementById(`mat_${i}`).value;
+                const gram = parseFloat(document.getElementById(`gram_${i}`).value) || 0;
+                if(idx !== "" && gram > 0) {
+                    const mat = inventory[idx];
+                    matCosts += (gram / 1000) * mat.price;
+                    usedMatsInfo.push(`${mat.name} (${gram}g)`);
+                    deductionList.push({index: idx, amount: gram});
+                }
+            }
+
+            if(usedMatsInfo.length === 0) return alert("Mindestens 1 Material wählen!");
+
             const h = parseFloat(document.getElementById('calc_h').value) || 0;
             const min = parseFloat(document.getElementById('calc_min').value) || 0;
             const wage = parseFloat(document.getElementById('calc_wage').value) || 30;
-
-            let matCosts = (mainG / 1000) * mainMat.price;
-            if(supportIdx !== "") {
-                matCosts += (supportG / 1000) * inventory[supportIdx].price;
-            }
+            const project = document.getElementById('calc_project_name').value;
 
             let energy = h * 0.15 * 0.40; 
             let wear = h * 0.60; 
@@ -242,32 +202,27 @@
             document.getElementById('res').style.display = 'block';
 
             if(doDeduct) {
-                // Abbuchen
-                inventory[mainIdx].stock = Math.max(0, inventory[mainIdx].stock - mainG);
-                if(supportIdx !== "") {
-                    inventory[supportIdx].stock = Math.max(0, inventory[supportIdx].stock - supportG);
-                }
-                
-                // Historie speichern
-                const now = new Date();
-                history.push({
-                    mat: mainMat.name,
-                    price: formattedPrice,
-                    date: now.toLocaleDateString('de-DE') + ' ' + now.toLocaleTimeString('de-DE', {hour: '2-digit', minute:'2-digit'})
+                deductionList.forEach(item => {
+                    inventory[item.index].stock = Math.max(0, inventory[item.index].stock - item.amount);
                 });
                 
-                // Nur die letzten 20 Aufträge behalten
-                if(history.length > 20) history.shift();
-
+                const now = new Date();
+                history.push({
+                    project: project,
+                    mat: usedMatsInfo.join(", "),
+                    price: formattedPrice,
+                    date: now.toLocaleString('de-DE', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'})
+                });
+                
+                if(history.length > 25) history.shift();
                 updateUI();
-                const msg = document.getElementById('order-success');
-                msg.style.display = 'block';
-                setTimeout(() => { msg.style.display = 'none'; }, 3000);
+                document.getElementById('order-success').style.display = 'block';
+                setTimeout(() => { document.getElementById('order-success').style.display = 'none'; }, 3000);
             }
         }
 
+        function clearHistory() { if(confirm("Historie leeren?")) { history = []; updateUI(); } }
         window.onload = updateUI;
     </script>
 </body>
 </html>
-
