@@ -3,86 +3,153 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>D3D Kalkulator</title>
+    <title>D3D Business Manager</title>
     <style>
-        body { font-family: sans-serif; padding: 15px; background: #f0f2f5; color: #333; }
-        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
-        h2 { color: #007bff; text-align: center; margin-top: 0; }
-        h3 { font-size: 14px; border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-top: 20px; color: #666; }
-        label { display: block; margin-top: 10px; font-size: 13px; font-weight: bold; }
-        input { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 16px; }
-        .settings { background: #f9f9f9; padding: 10px; border-radius: 8px; margin-bottom: 20px; border: 1px dashed #bbb; }
-        button { width: 100%; padding: 15px; background: #28a745; color: white; border: none; border-radius: 6px; font-size: 18px; font-weight: bold; margin-top: 20px; cursor: pointer; }
-        .result { margin-top: 20px; padding: 15px; background: #e9ecef; border-radius: 8px; text-align: center; }
-        .total { font-size: 22px; color: #28a745; font-weight: bold; }
+        body { font-family: sans-serif; padding: 10px; background: #1a1a1a; color: #e0e0e0; }
+        .card { background: #2d2d2d; padding: 20px; border-radius: 15px; max-width: 600px; margin: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h2 { color: #007bff; text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; }
+        .section { background: #383838; padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #444; }
+        h3 { font-size: 16px; margin-top: 0; color: #00d4ff; display: flex; justify-content: space-between; }
+        label { display: block; margin-top: 10px; font-size: 12px; color: #aaa; }
+        input { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #555; border-radius: 8px; background: #222; color: white; font-size: 16px; box-sizing: border-box; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        button { width: 100%; padding: 18px; background: #007bff; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; margin-top: 10px; cursor: pointer; transition: 0.3s; }
+        button:hover { background: #0056b3; }
+        .res-box { margin-top: 20px; padding: 20px; background: #1e1e1e; border-radius: 10px; border-left: 6px solid #28a745; text-align: center; }
+        .price-tag { font-size: 28px; color: #28a745; font-weight: bold; display: block; }
+        .stock-warn { color: #ff4444; font-size: 12px; margin-top: 5px; }
     </style>
 </head>
 <body>
     <div class="card">
-        <h2>D3D Kalkulator</h2>
+        <h2>D3D Business Rechner</h2>
 
-        <div class="settings">
-            <h3>⚙️ Stammdaten (werden gespeichert)</h3>
-            <label>Filamentpreis (€/kg):</label>
-            <input type="number" id="base_filament" step="0.01" onchange="saveData()">
-            <label>Strompreis (€/kWh):</label>
-            <input type="number" id="base_strom" step="0.01" onchange="saveData()">
-            <label>Stundensatz Arbeit (€/h):</label>
-            <input type="number" id="base_lohn" step="0.01" onchange="saveData()">
+        <div class="section">
+            <h3>📦 Material 1 (z.B. Hauptmaterial)</h3>
+            <div class="grid">
+                <div>
+                    <label>Preis (€/kg)</label>
+                    <input type="number" id="m1_p" step="0.01" onchange="save()">
+                </div>
+                <div>
+                    <label>Bestand (g)</label>
+                    <input type="number" id="m1_stock" onchange="save()">
+                </div>
+            </div>
         </div>
 
-        <h3>📦 Druck-Details</h3>
-        <label>Gewicht laut Slicer (g):</label>
-        <input type="number" id="gramm" placeholder="z.B. 120">
-        
-        <label>Druckzeit (Std):</label>
-        <input type="number" id="stunden" placeholder="z.B. 5.5">
-        
-        <label>Arbeitszeit (Minuten):</label>
-        <input type="number" id="arbeit_min" placeholder="Slicen, Nachbearbeitung">
+        <div class="section">
+            <h3>📦 Material 2 (z.B. Support / Zweitfarbe)</h3>
+            <div class="grid">
+                <div>
+                    <label>Preis (€/kg)</label>
+                    <input type="number" id="m2_p" step="0.01" onchange="save()">
+                </div>
+                <div>
+                    <label>Bestand (g)</label>
+                    <input type="number" id="m2_stock" onchange="save()">
+                </div>
+            </div>
+        </div>
 
-        <button onclick="calculate()">Preis berechnen</button>
+        <div class="section">
+            <h3>⚙️ Betriebskosten</h3>
+            <div class="grid">
+                <div>
+                    <label>Strom (€/kWh)</label>
+                    <input type="number" id="cfg_s" step="0.01" onchange="save()">
+                </div>
+                <div>
+                    <label>Lohn (€/h)</label>
+                    <input type="number" id="cfg_l" step="0.50" onchange="save()">
+                </div>
+            </div>
+        </div>
 
-        <div class="result" id="resBox" style="display:none;">
-            <span>Empfohlener Verkaufspreis:</span><br>
-            <span class="total" id="totalPrice">0,00 €</span>
+        <div class="section" style="border-color: #007bff;">
+            <h3>🚀 Aktueller Auftrag</h3>
+            <div class="grid">
+                <div>
+                    <label>Verbrauch M1 (g)</label>
+                    <input type="number" id="calc_m1" placeholder="0">
+                </div>
+                <div>
+                    <label>Verbrauch M2 (g)</label>
+                    <input type="number" id="calc_m2" placeholder="0">
+                </div>
+            </div>
+            <div class="grid">
+                <div>
+                    <label>Druckzeit (h)</label>
+                    <input type="number" id="calc_t" placeholder="0">
+                </div>
+                <div>
+                    <label>Arbeit (min)</label>
+                    <input type="number" id="calc_a" placeholder="0">
+                </div>
+            </div>
+        </div>
+
+        <button onclick="calculate()">Preis berechnen & Lager abbuchen</button>
+
+        <div id="res" class="res-box" style="display:none;">
+            <span style="color: #aaa;">Kalkulierter Verkaufspreis:</span>
+            <span id="total" class="price-tag">0,00 €</span>
+            <div id="stock_info" style="margin-top:10px; font-size: 13px;"></div>
         </div>
     </div>
 
     <script>
-        // Funktion zum Speichern der Stammdaten im Handy-Browser
-        function saveData() {
-            localStorage.setItem('f_price', document.getElementById('base_filament').value);
-            localStorage.setItem('s_price', document.getElementById('base_strom').value);
-            localStorage.setItem('l_price', document.getElementById('base_lohn').value);
+        function save() {
+            const data = {
+                m1p: document.getElementById('m1_p').value, m1s: document.getElementById('m1_stock').value,
+                m2p: document.getElementById('m2_p').value, m2s: document.getElementById('m2_stock').value,
+                s: document.getElementById('cfg_s').value, l: document.getElementById('cfg_l').value
+            };
+            localStorage.setItem('d3d_data', JSON.stringify(data));
         }
 
-        // Beim Laden der Seite alte Werte abrufen
         window.onload = function() {
-            document.getElementById('base_filament').value = localStorage.getItem('f_price') || 25.00;
-            document.getElementById('base_strom').value = localStorage.getItem('s_price') || 0.40;
-            document.getElementById('base_lohn').value = localStorage.getItem('l_price') || 30.00;
-        }
+            const saved = JSON.parse(localStorage.getItem('d3d_data'));
+            if(saved) {
+                document.getElementById('m1_p').value = saved.m1p; document.getElementById('m1_stock').value = saved.m1s;
+                document.getElementById('m2_p').value = saved.m2p; document.getElementById('m2_stock').value = saved.m2s;
+                document.getElementById('cfg_s').value = saved.s; document.getElementById('cfg_l').value = saved.l;
+            }
+        };
 
         function calculate() {
-            let fPrice = parseFloat(document.getElementById('base_filament').value) || 0;
-            let sPrice = parseFloat(document.getElementById('base_strom').value) || 0;
-            let lPrice = parseFloat(document.getElementById('base_lohn').value) || 0;
+            // Werte holen
+            let m1p = parseFloat(document.getElementById('m1_p').value) || 0;
+            let m1s = parseFloat(document.getElementById('m1_stock').value) || 0;
+            let m2p = parseFloat(document.getElementById('m2_p').value) || 0;
+            let m2s = parseFloat(document.getElementById('m2_stock').value) || 0;
+            let sP = parseFloat(document.getElementById('cfg_s').value) || 0.40;
+            let lP = parseFloat(document.getElementById('cfg_l').value) || 30;
 
-            let g = parseFloat(document.getElementById('gramm').value) || 0;
-            let h = parseFloat(document.getElementById('stunden').value) || 0;
-            let min = parseFloat(document.getElementById('arbeit_min').value) || 0;
+            let useM1 = parseFloat(document.getElementById('calc_m1').value) || 0;
+            let useM2 = parseFloat(document.getElementById('calc_m2').value) || 0;
+            let h = parseFloat(document.getElementById('calc_t').value) || 0;
+            let min = parseFloat(document.getElementById('calc_a').value) || 0;
 
-            // Kalkulations-Logik
-            let matKosten = (g / 1000) * fPrice;
-            let stromKosten = h * 0.15 * sPrice; // 0.15kW Schnitt f. Bambu
-            let verschleiss = h * 0.50; // 0,50€ Fix pro Stunde
-            let arbeitsKosten = (min / 60) * lPrice;
+            // Rechnung
+            let kostenM1 = (useM1 / 1000) * m1p;
+            let kostenM2 = (useM2 / 1000) * m2p;
+            let kostenStrom = h * 0.15 * sP;
+            let verschleiss = h * 0.60;
+            let arbeit = (min / 60) * lP;
 
-            let gesamt = (matKosten + stromKosten + verschleiss + arbeitsKosten) * 1.15; // 15% Risikopuffer
+            let gesamt = (kostenM1 + kostenM2 + kostenStrom + verschleiss + arbeit) * 1.15;
 
-            document.getElementById('totalPrice').innerText = gesamt.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
-            document.getElementById('resBox').style.display = 'block';
+            // Lager abbuchen
+            document.getElementById('m1_stock').value = (m1s - useM1).toFixed(0);
+            document.getElementById('m2_stock').value = (m2s - useM2).toFixed(0);
+            save();
+
+            // Anzeige
+            document.getElementById('total').innerText = gesamt.toLocaleString('de-DE', {style:'currency', currency:'EUR'});
+            document.getElementById('stock_info').innerHTML = `Lager neu: M1: ${m1s-useM1}g | M2: ${m2s-useM2}g`;
+            document.getElementById('res').style.display = 'block';
         }
     </script>
 </body>
