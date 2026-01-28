@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>3D-Druck Kalkulator</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #f4f4f9; }
+        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; background: #007bff; color: white; border: none; border-radius: 5px; font-size: 16px; }
+        .result { margin-top: 20px; font-weight: bold; color: #333; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>D3D-Druck Rechner</h2>
+        <label>Gewicht (g):</label>
+        <input type="number" id="gramm" placeholder="z.B. 150">
+        
+        <label>Druckzeit (Std):</label>
+        <input type="number" id="stunden" placeholder="z.B. 4.5">
+        
+        <label>Arbeitszeit (Min):</label>
+        <input type="number" id="arbeit" placeholder="z.B. 15">
+        
+        <button onclick="calculate()">Berechnen</button>
+
+        <div class="result" id="output"></div>
+    </div>
+
+    <script>
+        function calculate() {
+            // Deine Stammdaten
+            const preisProKg = 25; 
+            const stromKwh = 0.40;
+            const watt = 0.15; // 150W Durchschnitt
+            const stundenlohn = 30;
+            const verschleissProStd = 0.50;
+            const risiko = 1.15; // 15% Aufschlag
+
+            let g = document.getElementById('gramm').value;
+            let h = document.getElementById('stunden').value;
+            let min = document.getElementById('arbeit').value;
+
+            let material = (g / 1000) * preisProKg;
+            let strom = h * watt * stromKwh;
+            let abnutzung = h * verschleissProStd;
+            let arbeit = (min / 60) * stundenlohn;
+
+            let gesamt = (material + strom + abnutzung + arbeit) * risiko;
+
+            document.getElementById('output').innerHTML = 
+                "Material: " + material.toFixed(2) + " €<br>" +
+                "Arbeit: " + arbeit.toFixed(2) + " €<br>" +
+                "------------------<br>" +
+                "Endpreis (inkl. Risiko): " + gesamt.toFixed(2) + " €";
+        }
+    </script>
+</body>
+</html>
