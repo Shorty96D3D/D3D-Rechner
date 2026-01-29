@@ -13,20 +13,24 @@
         label { display: block; margin-top: 8px; font-size: 11px; color: #888; text-transform: uppercase; }
         input, select { width: 100%; padding: 10px; margin-top: 4px; border: 1px solid #444; border-radius: 6px; background: #121212; color: white; font-size: 15px; box-sizing: border-box; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        
+       
         button { width: 100%; padding: 14px; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; margin-top: 10px; cursor: pointer; transition: 0.2s; }
         .btn-calc { background: #6c757d; color: white; }
         .btn-order { background: #28a745; color: white; }
-        
-        /* Textfarbe auf Weiß geändert */
         .btn-add { background: #007bff; color: white; font-size: 13px; padding: 8px; }
+       
+        .inventory-item { background: #2a2a2a; padding: 10px; border-radius: 8px; margin-bottom: 8px; display: flex; align-items: center; font-size: 13px; border-left: 4px solid #007bff; color: white; transition: background 0.3s; }
+        /* Rote Karte bei Warnung */
+        .inventory-item.warning { background: #b31d1d; border-left-color: #ff4444; }
         
-        .inventory-item { background: #2a2a2a; padding: 10px; border-radius: 8px; margin-bottom: 8px; display: flex; align-items: center; font-size: 13px; border-left: 4px solid #007bff; }
         .item-info { flex-grow: 1; }
-        .item-actions { display: flex; gap: 8px; align-items: center; }
-        .refill-btn { background-color: #007bff; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .delete-btn { background-color: #ff4444 !important; color: white !important; border: none; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .item-actions { display: flex; gap: 5px; align-items: center; }
         
+        .action-btn { color: white; border: none; border-radius: 50%; width: 28px; height: 28px; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .refill-btn { background-color: #007bff; }
+        .settings-btn { background-color: #555; }
+        .delete-btn { background-color: #ff4444; }
+       
         .history-list { margin-top: 10px; max-height: 250px; overflow-y: auto; }
         .history-item { font-size: 12px; padding: 10px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; background: #2a2a2a; margin-bottom: 4px; border-radius: 4px; }
         .history-date { color: #888; font-size: 10px; }
@@ -52,12 +56,14 @@
                 <div><label>Preis (€/kg)</label><input type="number" id="new_price" step="0.01" placeholder="25.00"></div>
                 <div><label>Bestand (g)</label><input type="number" id="new_stock" placeholder="1000"></div>
             </div>
+            <label>Mindestbestand (Warnung bei weniger als... g)</label>
+            <input type="number" id="new_min" placeholder="100" value="100">
             <button class="btn-add" onclick="addMaterial()">+ Material hinzufügen</button>
         </div>
 
         <div class="section">
             <h3>🚀 Projekt-Kalkulation</h3>
-            
+           
             <label>Projektname / Kunde:</label>
             <input type="text" id="calc_project_name" placeholder="z.B. Huber - Rahmenhalter">
 
@@ -80,14 +86,14 @@
                 <select id="mat_3"></select>
                 <input type="number" id="gram_3" placeholder="Gramm">
             </div>
-            
+           
             <div class="grid">
                 <div><label>Druckzeit (h)</label><input type="number" id="calc_h" placeholder="4"></div>
                 <div><label>Arbeit (min)</label><input type="number" id="calc_min" placeholder="15"></div>
             </div>
             <label>Stundenlohn (€/h)</label>
             <input type="number" id="calc_wage" value="30">
-            
+           
             <button class="btn-calc" onclick="calculate(false)">Nur Preis berechnen</button>
             <button class="btn-order" onclick="calculate(true)">Auftrag bestätigen & Abbuchen</button>
             <div id="order-success" class="success-msg">✅ Auftrag gebucht & Bestände korrigiert!</div>
@@ -108,6 +114,7 @@
     </div>
 
     <script>
+        // "minStock" wird als neues Attribut in den Objekten gespeichert
         let inventory = JSON.parse(localStorage.getItem('d3d_inv')) || [];
         let history = JSON.parse(localStorage.getItem('d3d_history')) || [];
 
@@ -115,20 +122,30 @@
             const list = document.getElementById('inventory-list');
             const selects = [document.getElementById('mat_0'), document.getElementById('mat_1'), document.getElementById('mat_2'), document.getElementById('mat_3')];
             const histList = document.getElementById('history-list');
-            
+           
             list.innerHTML = '';
             selects.forEach(s => s.innerHTML = '<option value="">-- Wählen --</option>');
-            
+           
             let totalVal = 0;
 
             inventory.forEach((item, index) => {
-                const isLow = item.stock < 100;
-                const div = document.createElement('div');
-                div.className = 'inventory-item';
-                if (isLow) div.style.borderLeftColor = '#ff4444';
+                // Falls kein Mindestbestand definiert war, Standard 100 nutzen
+                const minLimit = item.minStock || 100;
+                const isLow = item.stock < minLimit;
                 
-                div.innerHTML = `<div class="item-info"><strong>${item.name}</strong><br>${item.stock}g (${item.price}€/kg)</div>
-                    <div class="item-actions"><button class="refill-btn" onclick="refillItem(${index})">+</button><button class="delete-btn" onclick="deleteItem(${index})">X</button></div>`;
+                const div = document.createElement('div');
+                div.className = 'inventory-item' + (isLow ? ' warning' : '');
+               
+                div.innerHTML = `
+                    <div class="item-info">
+                        <strong>${item.name}</strong><br>
+                        ${item.stock}g (${item.price}€/kg) <span style="font-size:9px; opacity:0.7;">(Min: ${minLimit}g)</span>
+                    </div>
+                    <div class="item-actions">
+                        <button class="action-btn refill-btn" onclick="refillItem(${index})">+</button>
+                        <button class="action-btn settings-btn" onclick="changeMinStock(${index})">⚙️</button>
+                        <button class="action-btn delete-btn" onclick="deleteItem(${index})">✕</button>
+                    </div>`;
                 list.appendChild(div);
 
                 selects.forEach(s => s.options.add(new Option(`${item.name} (${item.stock}g)`, index)));
@@ -155,11 +172,22 @@
             const name = document.getElementById('new_name').value;
             const price = parseFloat(document.getElementById('new_price').value);
             const stock = parseFloat(document.getElementById('new_stock').value);
+            const minStock = parseFloat(document.getElementById('new_min').value) || 100;
+            
             if(name && !isNaN(price)) {
-                inventory.push({name, price, stock: stock || 0});
+                inventory.push({name, price, stock: stock || 0, minStock: minStock});
                 document.getElementById('new_name').value = '';
                 document.getElementById('new_price').value = '';
                 document.getElementById('new_stock').value = '';
+                updateUI();
+            }
+        }
+
+        function changeMinStock(index) {
+            const currentMin = inventory[index].minStock || 100;
+            const newMin = prompt(`Neuer Mindestbestand für ${inventory[index].name} (g):`, currentMin);
+            if (newMin !== null && !isNaN(newMin)) {
+                inventory[index].minStock = parseFloat(newMin);
                 updateUI();
             }
         }
@@ -196,8 +224,8 @@
             const wage = parseFloat(document.getElementById('calc_wage').value) || 30;
             const project = document.getElementById('calc_project_name').value;
 
-            let energy = h * 0.15 * 0.40; 
-            let wear = h * 0.60; 
+            let energy = h * 0.15 * 0.40;
+            let wear = h * 0.60;
             let labor = (min / 60) * wage;
             let total = (matCosts + energy + wear + labor) * 1.15;
 
@@ -209,7 +237,7 @@
                 deductionList.forEach(item => {
                     inventory[item.index].stock = Math.max(0, inventory[item.index].stock - item.amount);
                 });
-                
+               
                 const now = new Date();
                 history.push({
                     project: project,
@@ -217,7 +245,7 @@
                     price: formattedPrice,
                     date: now.toLocaleString('de-DE', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'})
                 });
-                
+               
                 if(history.length > 25) history.shift();
                 updateUI();
                 document.getElementById('order-success').style.display = 'block';
