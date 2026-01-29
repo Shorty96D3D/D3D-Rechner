@@ -3,214 +3,384 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>D3D Business Manager Elite v3.1</title>
+    <title>Lager-Manager Pro | Enterprise v4.1</title>
     <style>
-        body { font-family: -apple-system, sans-serif; padding: 10px; background: #121212; color: #e0e0e0; line-height: 1.4; margin-top: 20px; }
-        .card { background: #1e1e1e; padding: 15px; border-radius: 12px; max-width: 600px; margin: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.6); }
+        :root {
+            --accent-purple: #a29bfe;
+            --accent-yellow: #ffeaa7;
+            --bg-dark: #0f0f12;
+            --card-bg: #1e1e26;
+            --text-main: #f0f0f0;
+            --text-dim: #8e8e93;
+            --danger: #ff7675;
+            --success: #55efc4;
+        }
 
-        h2 { color: #007bff; text-align: center; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; }
-        .section { background: #252525; padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #333; }
-        h3 { font-size: 14px; margin: 0 0 10px 0; color: #00d4ff; border-bottom: 1px solid #444; padding-bottom: 5px; }
+        body { 
+            font-family: 'Inter', -apple-system, sans-serif; 
+            padding: 0; margin: 0; 
+            background: var(--bg-dark); 
+            color: var(--text-main); 
+            padding-bottom: 50px;
+        }
 
-        label { display: block; margin-top: 8px; font-size: 11px; color: #888; text-transform: uppercase; }
-        input, select { width: 100%; padding: 10px; margin-top: 4px; border: 1px solid #444; border-radius: 6px; background: #121212; color: white; font-size: 15px; box-sizing: border-box; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .grid-triple { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+        header {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            position: sticky; top: 0; z-index: 100;
+            border-bottom: 2px solid var(--accent-purple);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+        }
 
-        button { width: 100%; padding: 14px; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; margin-top: 10px; cursor: pointer; transition: 0.2s; }
-        .btn-calc { background: #6c757d; color: white; }
-        .btn-order { background: #28a745; color: white; }
-        .btn-add { background: #007bff; color: white; font-size: 13px; padding: 8px; }
+        .search-container { max-width: 800px; margin: auto; }
+        .search-bar {
+            width: 100%; padding: 14px 20px; border-radius: 12px;
+            border: 1px solid #333; background: #2d2d3a; color: white;
+            font-size: 16px; outline: none; transition: 0.3s; box-sizing: border-box;
+        }
+        .search-bar:focus { border-color: var(--accent-purple); box-shadow: 0 0 15px rgba(162, 155, 254, 0.2); }
 
-        .inventory-item { background: #2a2a2a; padding: 10px; border-radius: 8px; margin-bottom: 8px; display: flex; align-items: center; font-size: 13px; border-left: 4px solid #007bff; transition: 0.3s; }
-        .low-stock { background: #4a1a1a !important; border-left-color: #ff4444 !important; border: 1px solid #ff4444; }
+        .container { max-width: 900px; margin: 25px auto; padding: 0 15px; }
+
+        /* DASHBOARD */
+        .dashboard-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;
+        }
+
+        .location-card {
+            background: var(--card-bg); padding: 25px; border-radius: 20px;
+            border: 1px solid #333; cursor: pointer; transition: 0.3s;
+            display: flex; flex-direction: column; justify-content: space-between;
+        }
+        .location-card:hover { transform: translateY(-5px); border-color: var(--accent-purple); background: #252530; }
+        .location-card h3 { margin: 0; color: var(--accent-yellow); font-size: 20px; }
+        .location-card .stats { font-size: 13px; color: var(--text-dim); margin-top: 10px; }
+
+        /* ITEM ROWS */
+        .item-row {
+            background: var(--card-bg); margin-bottom: 12px; padding: 18px;
+            border-radius: 15px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center;
+            border-left: 5px solid var(--accent-purple);
+        }
+        .item-row.is-low { border-left-color: var(--danger); background: #2a1b1b; }
+
+        .item-info { flex: 1; min-width: 200px; }
+        .item-info b { font-size: 17px; display: block; color: var(--accent-yellow); }
+        .item-info small { color: var(--text-dim); font-size: 12px; }
+        .min-info { font-size: 11px; color: var(--accent-purple); font-weight: bold; background: rgba(162, 155, 254, 0.1); padding: 2px 6px; border-radius: 4px; }
         
-        .item-info { flex-grow: 1; }
-        .item-actions { display: flex; gap: 5px; align-items: center; }
-        
-        .icon-btn { border: none; border-radius: 50%; width: 28px; height: 28px; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: white; }
-        .refill-btn { background-color: #007bff; }
-        .settings-btn { background-color: #555; }
-        .delete-btn { background-color: #ff4444; }
+        .stock-badge { 
+            background: #2d2d3a; padding: 8px 15px; border-radius: 10px; 
+            font-weight: bold; border: 1px solid #444; min-width: 60px; text-align: center;
+            font-size: 18px;
+        }
 
-        .history-list { margin-top: 10px; max-height: 250px; overflow-y: auto; }
-        .history-item { font-size: 12px; padding: 10px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; background: #2a2a2a; margin-bottom: 4px; border-radius: 4px; }
-        
-        .total-box { margin-top: 15px; padding: 15px; background: #121212; border-radius: 8px; text-align: center; border: 1px solid #00d4ff; }
-        .price-tag { font-size: 26px; color: #00d4ff; font-weight: bold; display: block; }
-        .success-msg { color: #28a745; font-size: 12px; margin-top: 5px; font-weight: bold; display: none; text-align: center; }
+        .action-group { display: flex; gap: 8px; margin-top: 10px; width: 100%; justify-content: flex-end; }
+        .btn {
+            padding: 10px 16px; border: none; border-radius: 10px; cursor: pointer;
+            font-weight: bold; transition: 0.2s; font-size: 13px;
+        }
+        .btn-primary { background: var(--accent-purple); color: #121212; }
+        .btn-outline { background: transparent; border: 1px solid var(--accent-purple); color: var(--accent-purple); }
+        .btn-transfer { background: var(--accent-yellow); color: #121212; }
+
+        /* OVERLAYS */
+        .overlay {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95);
+            z-index: 2000; padding: 20px; overflow-y: auto;
+        }
+        .modal {
+            background: var(--card-bg); max-width: 450px; margin: 40px auto;
+            padding: 30px; border-radius: 20px; border: 1px solid var(--accent-purple);
+        }
+
+        input, select {
+            width: 100%; padding: 12px; margin: 10px 0 20px 0;
+            background: #121212; border: 1px solid #444; border-radius: 10px; color: white; box-sizing: border-box;
+        }
+
+        .history-list { font-size: 12px; color: var(--text-dim); max-height: 200px; overflow-y: auto; background: #121212; padding: 10px; border-radius: 10px; }
+        .history-item { padding: 5px 0; border-bottom: 1px solid #222; }
+
+        .warn-tag { color: var(--danger); font-size: 11px; font-weight: bold; text-transform: uppercase; }
+        .nav-buttons { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h2>D3D Business Manager</h2>
-
-    <div class="section">
-        <h3>📦 Lagerbestand & Schwellenwerte</h3>
-        <div id="inventory-list"></div>
-        <div id="warehouse-value" style="font-size: 12px; color: #28a745; margin-top: 10px; text-align: right;">Warenwert: 0,00 €</div>
-        <hr style="border: 0; border-top: 1px solid #444; margin: 15px 0;">
-        
-        <label>Neues Material Name:</label>
-        <input type="text" id="new_name" placeholder="z.B. PLA Schwarz">
-        
-        <div class="grid-triple">
-            <div><label>Preis (€/kg)</label><input type="number" id="new_price" step="0.01" placeholder="25.00"></div>
-            <div><label>Bestand (g)</label><input type="number" id="new_stock" placeholder="1000"></div>
-            <div><label>Warnwert (g)</label><input type="number" id="new_min" placeholder="200" value="150"></div>
-        </div>
-        <button class="btn-add" onclick="addMaterial()">+ Material hinzufügen</button>
+<header>
+    <div class="search-container">
+        <input type="text" id="globalSearch" class="search-bar" placeholder="🔍 Suchen (z.B. Artikelname oder 'leer')..." onkeyup="render()">
     </div>
+</header>
 
-    <div class="section">
-        <h3>🚀 Projekt-Kalkulation</h3>
-        <label>Projektname / Kunde:</label>
-        <input type="text" id="calc_project_name" placeholder="z.B. Huber - Rahmenhalter">
+<div class="container" id="app-root"></div>
 
-        <label>Materialien (bis zu 4):</label>
-        <div class="grid" style="margin-bottom: 5px;">
-            <select id="mat_0"></select>
-            <input type="number" id="gram_0" placeholder="Gramm">
+<div id="modalItem" class="overlay">
+    <div class="modal">
+        <h3 id="modalTitle">Artikel bearbeiten</h3>
+        <input type="hidden" id="editIdx">
+        <label>Artikelbezeichnung</label>
+        <input type="text" id="inName">
+        <div style="display:flex; gap:10px;">
+            <div><label>Menge</label><input type="number" id="inStock"></div>
+            <div><label>Min-Soll</label><input type="number" id="inMin"></div>
         </div>
-        <div class="grid" style="margin-bottom: 5px;">
-            <select id="mat_1"></select>
-            <input type="number" id="gram_1" placeholder="Gramm">
-        </div>
-        <div class="grid" style="margin-bottom: 5px;">
-            <select id="mat_2"></select>
-            <input type="number" id="gram_2" placeholder="Gramm">
-        </div>
-        <div class="grid">
-            <select id="mat_3"></select>
-            <input type="number" id="gram_3" placeholder="Gramm">
-        </div>
-
-        <div class="grid">
-            <div><label>Druckzeit (h)</label><input type="number" id="calc_h" placeholder="4"></div>
-            <div><label>Arbeit (min)</label><input type="number" id="calc_min" placeholder="15"></div>
-        </div>
-        <label>Stundenlohn (€/h)</label>
-        <input type="number" id="calc_wage" value="30">
-
-        <button class="btn-calc" onclick="calculate(false)">Nur Preis berechnen</button>
-        <button class="btn-order" onclick="calculate(true)">Auftrag bestätigen & Abbuchen</button>
-        <div id="order-success" class="success-msg">✅ Auftrag gebucht & Bestände korrigiert!</div>
+        <label>Lagerort</label>
+        <select id="inLoc"></select>
+        <button class="btn btn-primary" style="width:100%" onclick="saveItem()">Speichern</button>
+        <button class="btn btn-outline" style="width:100%; margin-top:10px;" onclick="closeModals()">Abbrechen</button>
+        <button id="delBtn" class="btn btn-outline" style="width:100%; margin-top:10px; color:var(--danger); border-color:var(--danger); display:none;" onclick="deleteItem()">Löschen</button>
     </div>
+</div>
 
-    <div id="res" class="total-box" style="display:none;">
-        <span style="color: #888; font-size: 12px;">GESAMT-ANGEBOTSPREIS:</span>
-        <span id="total_price" class="price-tag">0,00 €</span>
+<div id="modalTransfer" class="overlay">
+    <div class="modal">
+        <h3>📦 Umlagern</h3>
+        <p id="transferItemName" style="color: var(--accent-purple); font-weight: bold;"></p>
+        <label>Menge</label>
+        <input type="number" id="transQty" value="1">
+        <label>Ziel-Lager</label>
+        <select id="transTarget"></select>
+        <button class="btn btn-transfer" style="width:100%" onclick="executeTransfer()">Verschieben</button>
+        <button class="btn btn-outline" style="width:100%; margin-top:10px;" onclick="closeModals()">Abbrechen</button>
     </div>
+</div>
 
-    <div class="section">
-        <h3>📜 Historie</h3>
-        <div id="history-list" class="history-list">
-            <div style="color: #666; font-size: 12px; text-align: center; padding: 10px;">Noch keine Einträge.</div>
-        </div>
-        <button onclick="clearHistory()" style="background: none; color: #ff4444; font-size: 10px; padding: 5px; margin-top: 10px; width: auto; font-weight: normal;">Historie löschen</button>
+<div id="modalCopy" class="overlay">
+    <div class="modal">
+        <h3>📋 Standort-Profil kopieren</h3>
+        <p style="font-size: 13px; color: var(--text-dim);">Überträgt alle Artikelnamen und deren Mindestbestände auf ein anderes Lager.</p>
+        <label>Von (Quelle):</label>
+        <select id="copySource"></select>
+        <label>Nach (Ziel):</label>
+        <select id="copyTarget"></select>
+        <button class="btn btn-primary" style="width:100%" onclick="executeProfileCopy()">Profil übertragen</button>
+        <button class="btn btn-outline" style="width:100%; margin-top:10px;" onclick="closeModals()">Abbrechen</button>
     </div>
 </div>
 
 <script>
-    let inventory = JSON.parse(localStorage.getItem('d3d_inv')) || [];
-    let history = JSON.parse(localStorage.getItem('d3d_history')) || [];
+    // Daten laden oder initialisieren
+    let locations = JSON.parse(localStorage.getItem('L_LOCS')) || ["Hauptlager", "Auto Domi", "Garage", "Anhänger"];
+    let inventory = JSON.parse(localStorage.getItem('L_INV')) || [];
+    let history = JSON.parse(localStorage.getItem('L_HIST')) || [];
 
-    function updateUI() {
-        const list = document.getElementById('inventory-list');
-        const selects = [document.getElementById('mat_0'), document.getElementById('mat_1'), document.getElementById('mat_2'), document.getElementById('mat_3')];
-        const histList = document.getElementById('history-list');
+    let currentView = 'dashboard'; 
+    let activeLoc = null;
+    let transferSourceIdx = null;
+
+    function save() {
+        localStorage.setItem('L_LOCS', JSON.stringify(locations));
+        localStorage.setItem('L_INV', JSON.stringify(inventory));
+        localStorage.setItem('L_HIST', JSON.stringify(history));
+    }
+
+    function logAction(msg) {
+        history.unshift(`${new Date().toLocaleString('de-DE')}: ${msg}`);
+        if(history.length > 50) history.pop();
+        save();
+    }
+
+    function render() {
+        const root = document.getElementById('app-root');
+        const term = document.getElementById('globalSearch').value.toLowerCase();
+        root.innerHTML = '';
+
+        if(term) { 
+            renderSearch(root, term); 
+        } else if(currentView === 'dashboard') { 
+            renderDashboard(root); 
+        } else { 
+            renderLocationView(root); 
+        }
+    }
+
+    function renderDashboard(container) {
+        container.innerHTML = `
+            <div class="nav-buttons">
+                <button class="btn btn-primary" onclick="openItemModal(null, locations[0])">+ Global Neu</button>
+                <button class="btn btn-outline" onclick="openCopyModal()">📋 Profile kopieren</button>
+            </div>
+            <h2>Lager-Übersicht</h2>`;
         
-        list.innerHTML = '';
-        selects.forEach(s => s.innerHTML = '<option value="">-- Wählen --</option>');
-        
-        let totalVal = 0;
+        const grid = document.createElement('div');
+        grid.className = 'dashboard-grid';
 
-        inventory.forEach((item, index) => {
-            const minVal = item.minStock || 150; // Standard 150g wenn nichts gesetzt
-            const isLow = item.stock < minVal;
-
-            const div = document.createElement('div');
-            div.className = 'inventory-item' + (isLow ? ' low-stock' : '');
-            div.innerHTML = `
-                <div class="item-info">
-                    <strong>${item.name}</strong><br>
-                    ${item.stock}g / <small style="color:#aaa">Limit: ${minVal}g</small> (${item.price}€/kg)
-                </div>
-                <div class="item-actions">
-                    <button class="icon-btn refill-btn" onclick="refillItem(${index})" title="Bestand hinzufügen">+</button>
-                    <button class="icon-btn settings-btn" onclick="editThreshold(${index})" title="Warnwert ändern">⚙️</button>
-                    <button class="icon-btn delete-btn" onclick="deleteItem(${index})" title="Löschen">X</button>
+        locations.forEach(loc => {
+            const items = inventory.filter(i => i.location === loc);
+            const low = items.filter(i => i.stock <= i.min && i.min > 0).length;
+            grid.innerHTML += `
+                <div class="location-card" onclick="viewLoc('${loc}')">
+                    <div>
+                        <h3>${loc}</h3>
+                        <div class="stats">${items.length} Typen | ${items.reduce((a,b)=>a+(parseInt(b.stock)||0),0)} Stk.</div>
+                    </div>
+                    ${low > 0 ? `<div class="warn-tag">⚠️ ${low} auffüllen</div>` : ''}
                 </div>`;
-            list.appendChild(div);
+        });
+        container.appendChild(grid);
+        renderHistory(container);
+    }
 
-            selects.forEach(s => s.options.add(new Option(`${item.name} (${item.stock}g)`, index)));
-            totalVal += (item.stock / 1000) * item.price;
+    function renderLocationView(container) {
+        container.innerHTML = `
+            <div style="cursor:pointer; color:var(--accent-purple); margin-bottom:20px;" onclick="currentView='dashboard'; render();">← Zurück</div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2>${activeLoc}</h2>
+                <button class="btn btn-primary" onclick="openItemModal(null, '${activeLoc}')">+ Neu</button>
+            </div><br>`;
+        inventory.filter(i => i.location === activeLoc).forEach(item => container.appendChild(createItemCard(item)));
+    }
+
+    function renderSearch(container, term) {
+        container.innerHTML = `<h2>Suche: "${term}"</h2><br>`;
+        inventory.filter(i => {
+            const matchName = i.name.toLowerCase().includes(term);
+            const matchEmpty = (term === 'leer' && i.stock <= i.min && i.min > 0);
+            return matchName || matchEmpty;
+        }).forEach(item => container.appendChild(createItemCard(item)));
+    }
+
+    function createItemCard(item) {
+        const idx = inventory.indexOf(item);
+        const isLow = item.stock <= item.min && item.min > 0;
+        const div = document.createElement('div');
+        div.className = 'item-row' + (isLow ? ' is-low' : '');
+        div.innerHTML = `
+            <div class="item-info">
+                <small>${item.location}</small>
+                <b>${item.name}</b>
+                <span class="min-info">Soll: ${item.min}</span>
+            </div>
+            <div class="stock-badge">${item.stock}</div>
+            <div class="action-group">
+                <button class="btn btn-outline" onclick="changeStock(${idx}, 1)">+</button>
+                <button class="btn btn-outline" onclick="changeStock(${idx}, -1)">-</button>
+                <button class="btn btn-transfer" onclick="openTransfer(${idx})">📦</button>
+                <button class="btn btn-outline" onclick="openItemModal(${idx}, '${item.location}')">⚙️</button>
+            </div>`;
+        return div;
+    }
+
+    function changeStock(idx, amt) {
+        inventory[idx].stock = Math.max(0, (parseInt(inventory[idx].stock) || 0) + amt);
+        save();
+        render();
+    }
+
+    function viewLoc(loc) { activeLoc = loc; currentView = 'location'; render(); }
+    function closeModals() { document.querySelectorAll('.overlay').forEach(o => o.style.display='none'); }
+
+    function openItemModal(idx, loc) {
+        document.getElementById('editIdx').value = idx !== null ? idx : "";
+        const s = document.getElementById('inLoc');
+        s.innerHTML = locations.map(l => `<option value="${l}" ${l===loc?'selected':''}>${l}</option>`).join('');
+        
+        const delBtn = document.getElementById('delBtn');
+        if(idx !== null) {
+            const i = inventory[idx];
+            document.getElementById('inName').value = i.name;
+            document.getElementById('inStock').value = i.stock;
+            document.getElementById('inMin').value = i.min;
+            document.getElementById('modalTitle').innerText = "Artikel bearbeiten";
+            delBtn.style.display = "block";
+        } else {
+            document.getElementById('inName').value = ""; 
+            document.getElementById('inStock').value = "0"; 
+            document.getElementById('inMin').value = "0";
+            document.getElementById('modalTitle').innerText = "Neuer Artikel";
+            delBtn.style.display = "none";
+        }
+        document.getElementById('modalItem').style.display = 'block';
+    }
+
+    function saveItem() {
+        const idx = document.getElementById('editIdx').value;
+        const data = { 
+            name: document.getElementById('inName').value, 
+            stock: parseInt(document.getElementById('inStock').value)||0, 
+            min: parseInt(document.getElementById('inMin').value)||0, 
+            location: document.getElementById('inLoc').value 
+        };
+        if(!data.name) return alert("Name fehlt!");
+        
+        if(idx !== "") inventory[idx] = data; else inventory.push(data);
+        logAction(`GESPEICHERT: ${data.name} (${data.location})`);
+        closeModals(); render();
+    }
+
+    function deleteItem() {
+        const idx = document.getElementById('editIdx').value;
+        if(idx !== "" && confirm("Diesen Artikel wirklich löschen?")) {
+            const deleted = inventory.splice(idx, 1);
+            logAction(`GELÖSCHT: ${deleted[0].name}`);
+            closeModals(); render();
+        }
+    }
+
+    function openTransfer(idx) {
+        transferSourceIdx = idx;
+        const i = inventory[idx];
+        document.getElementById('transferItemName').innerText = `${i.name} (${i.location})`;
+        document.getElementById('transQty').value = 1;
+        document.getElementById('transTarget').innerHTML = locations.filter(l => l !== i.location).map(l => `<option value="${l}">${l}</option>`).join('');
+        document.getElementById('modalTransfer').style.display = 'block';
+    }
+
+    function executeTransfer() {
+        const qty = parseInt(document.getElementById('transQty').value);
+        const target = document.getElementById('transTarget').value;
+        const source = inventory[transferSourceIdx];
+        if(!qty || qty > source.stock) return alert("Menge ungültig oder nicht genug Bestand!");
+
+        source.stock -= qty;
+        let tItem = inventory.find(i => i.name === source.name && i.location === target);
+        if(tItem) {
+            tItem.stock = (parseInt(tItem.stock) || 0) + qty;
+        } else {
+            inventory.push({name: source.name, stock: qty, min: 0, location: target});
+        }
+        
+        logAction(`TRANSFER: ${qty}x ${source.name} von ${source.location} nach ${target}`);
+        closeModals(); render();
+    }
+
+    function openCopyModal() {
+        const opts = locations.map(l => `<option value="${l}">${l}</option>`).join('');
+        document.getElementById('copySource').innerHTML = opts;
+        document.getElementById('copyTarget').innerHTML = opts;
+        document.getElementById('modalCopy').style.display = 'block';
+    }
+
+    function executeProfileCopy() {
+        const src = document.getElementById('copySource').value;
+        const target = document.getElementById('copyTarget').value;
+        if(src === target) return alert("Quelle und Ziel gleich!");
+
+        const sourceItems = inventory.filter(i => i.location === src);
+        sourceItems.forEach(sItem => {
+            let tItem = inventory.find(i => i.name === sItem.name && i.location === target);
+            if(tItem) {
+                tItem.min = sItem.min;
+            } else {
+                inventory.push({ name: sItem.name, stock: 0, min: sItem.min, location: target });
+            }
         });
 
-        if (history.length > 0) {
-            histList.innerHTML = '';
-            history.slice().reverse().forEach(entry => {
-                const hDiv = document.createElement('div');
-                hDiv.className = 'history-item';
-                hDiv.innerHTML = `<div><strong>${entry.project || 'Unbenanntes Projekt'}</strong><br><span style="font-size:10px; color:#aaa">${entry.mat}</span><br><span style="font-size:10px; color:#888">${entry.date}</span></div>
-                                  <div style="color: #00d4ff; font-weight: bold;">${entry.price}</div>`;
-                histList.appendChild(hDiv);
-            });
-        }
-
-        document.getElementById('warehouse-value').innerText = `Warenwert Lager: ${totalVal.toFixed(2)} €`;
-        localStorage.setItem('d3d_inv', JSON.stringify(inventory));
-        localStorage.setItem('d3d_history', JSON.stringify(history));
+        logAction(`PROFIL KOPIERT: Von ${src} nach ${target}`);
+        closeModals(); render();
     }
 
-    function addMaterial() {
-        const name = document.getElementById('new_name').value;
-        const price = parseFloat(document.getElementById('new_price').value);
-        const stock = parseFloat(document.getElementById('new_stock').value);
-        const min = parseFloat(document.getElementById('new_min').value);
-        
-        if(name && !isNaN(price)) {
-            inventory.push({
-                name, 
-                price, 
-                stock: stock || 0, 
-                minStock: min || 150
-            });
-            document.getElementById('new_name').value = '';
-            document.getElementById('new_price').value = '';
-            document.getElementById('new_stock').value = '';
-            document.getElementById('new_min').value = '150';
-            updateUI();
-        }
+    function renderHistory(c) {
+        const h = document.createElement('div');
+        h.style.marginTop = "30px";
+        h.innerHTML = `<h3>Logbuch</h3><div class="history-list">${history.map(x => `<div class="history-item">${x}</div>`).join('')}</div>
+                       <button onclick="if(confirm('Log leeren?')){history=[];save();render();}" style="background:none; border:none; color:var(--danger); font-size:10px; cursor:pointer; margin-top:5px;">Log leeren</button>`;
+        c.appendChild(h);
     }
 
-    function editThreshold(index) {
-        const current = inventory[index].minStock || 150;
-        const newVal = prompt(`Ab wie viel Gramm soll ${inventory[index].name} rot markiert werden?`, current);
-        if (newVal !== null) {
-            inventory[index].minStock = parseFloat(newVal);
-            updateUI();
-        }
-    }
-
-    function refillItem(index) {
-        const amount = prompt(`Menge für ${inventory[index].name} (g) hinzufügen:`, "1000");
-        if (amount) { inventory[index].stock += parseFloat(amount); updateUI(); }
-    }
-
-    function deleteItem(index) {
-        if(confirm("Material unwiderruflich löschen?")) { inventory.splice(index, 1); updateUI(); }
-    }
-
-    function calculate(doDeduct) {
-        let matCosts = 0;
-        let usedMatsInfo = [];
-        let deductionList = [];
-
-        for(let i=0; i<4; i++) {
-            const idx = document.getElementById(`mat_${i}`).value;
-            const gram = parseFloat(document.getElementById(`gram_${i}`).value) || 0;
-            if(idx !== "" && gram > 0) {
-                const mat = inventory[idx];
-                matCosts += (gram / 1000
+    window.onload = render;
+</script>
+</body>
+</html>
