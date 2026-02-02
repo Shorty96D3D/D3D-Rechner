@@ -1,260 +1,280 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>D3D Business Manager Elite</title>
-    <style>
-        body { font-family: -apple-system, sans-serif; padding: 10px; background: #121212; color: #e0e0e0; line-height: 1.4; }
-        .card { background: #1e1e1e; padding: 15px; border-radius: 12px; max-width: 600px; margin: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.6); }
-        h2 { color: #007bff; text-align: center; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; }
-        .section { background: #252525; padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #333; }
-        h3 { font-size: 14px; margin: 0 0 10px 0; color: #00d4ff; border-bottom: 1px solid #444; padding-bottom: 5px; }
-        label { display: block; margin-top: 8px; font-size: 11px; color: #888; text-transform: uppercase; }
-        input, select { width: 100%; padding: 10px; margin-top: 4px; border: 1px solid #444; border-radius: 6px; background: #121212; color: white; font-size: 15px; box-sizing: border-box; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-       
-        button { width: 100%; padding: 14px; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; margin-top: 10px; cursor: pointer; transition: 0.2s; }
-        .btn-calc { background: #6c757d; color: white; }
-        .btn-order { background: #28a745; color: white; }
-        .btn-add { background: #007bff; color: white; font-size: 13px; padding: 8px; }
-       
-        .inventory-item { background: #2a2a2a; padding: 10px; border-radius: 8px; margin-bottom: 8px; display: flex; align-items: center; font-size: 13px; border-left: 4px solid #007bff; color: white; transition: background 0.3s; }
-        /* Rote Karte bei Warnung */
-        .inventory-item.warning { background: #b31d1d; border-left-color: #ff4444; }
-        
-        .item-info { flex-grow: 1; }
-        .item-actions { display: flex; gap: 5px; align-items: center; }
-        
-        .action-btn { color: white; border: none; border-radius: 50%; width: 28px; height: 28px; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .refill-btn { background-color: #007bff; }
-        .settings-btn { background-color: #555; }
-        .delete-btn { background-color: #ff4444; }
-       
-        .history-list { margin-top: 10px; max-height: 250px; overflow-y: auto; }
-        .history-item { font-size: 12px; padding: 10px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; background: #2a2a2a; margin-bottom: 4px; border-radius: 4px; }
-        .history-date { color: #888; font-size: 10px; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>D3D Business Manager Elite</title>
+<style>
+body { font-family: -apple-system, sans-serif; padding: 10px; background: #121212; color: #e0e0e0; line-height: 1.4; }
+.card { background: #1e1e1e; padding: 15px; border-radius: 12px; max-width: 600px; margin: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.6); }
+h2 { color: #007bff; text-align: center; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; }
+.section { background: #252525; padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #333; }
+h3 { font-size: 14px; margin: 0 0 10px 0; color: #00d4ff; border-bottom: 1px solid #444; padding-bottom: 5px; }
+label { display: block; margin-top: 8px; font-size: 11px; color: #888; text-transform: uppercase; }
+input, select { width: 100%; padding: 10px; margin-top: 4px; border: 1px solid #444; border-radius: 6px; background: #121212; color: white; font-size: 15px; box-sizing: border-box; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
-        .total-box { margin-top: 15px; padding: 15px; background: #121212; border-radius: 8px; text-align: center; border: 1px solid #00d4ff; }
-        .price-tag { font-size: 26px; color: #00d4ff; font-weight: bold; display: block; }
-        .success-msg { color: #28a745; font-size: 12px; margin-top: 5px; font-weight: bold; display: none; }
-        .multi-label { color: #aaa !important; font-size: 10px !important; margin-top: 4px !important; }
-    </style>
+button { width: 100%; padding: 14px; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; margin-top: 10px; cursor: pointer; transition: 0.2s; }
+.btn-calc { background: #6c757d; color: white; }
+.btn-order { background: #28a745; color: white; }
+.btn-add { background: #007bff; color: white; font-size: 13px; padding: 8px; }
+
+.inventory-item { background: #2a2a2a; padding: 10px; border-radius: 8px; margin-bottom: 8px; display: flex; align-items: center; font-size: 13px; border-left: 4px solid #007bff; color: white; transition: background 0.3s; }
+.inventory-item.warning { background: #b31d1d; border-left-color: #ff4444; }
+
+.item-info { flex-grow: 1; }
+.item-actions { display: flex; gap: 5px; align-items: center; }
+
+.action-btn { color: white; border: none; border-radius: 50%; width: 28px; height: 28px; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.refill-btn { background-color: #007bff; }
+.settings-btn { background-color: #555; }
+.delete-btn { background-color: #ff4444; }
+
+.history-list { margin-top: 10px; max-height: 250px; overflow-y: auto; }
+.history-item { font-size: 12px; padding: 10px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; background: #2a2a2a; margin-bottom: 4px; border-radius: 4px; }
+.history-date { color: #888; font-size: 10px; }
+
+.total-box { margin-top: 15px; padding: 15px; background: #121212; border-radius: 8px; text-align: center; border: 1px solid #00d4ff; }
+.price-tag { font-size: 26px; color: #00d4ff; font-weight: bold; display: block; }
+.success-msg { color: #28a745; font-size: 12px; margin-top: 5px; font-weight: bold; display: none; }
+.multi-label { color: #aaa !important; font-size: 10px !important; margin-top: 4px !important; }
+</style>
 </head>
 <body>
-    <div class="card">
-        <h2>D3D Business Manager</h2>
+<div class="card">
+<h2>D3D Business Manager</h2>
 
-        <div class="section">
-            <h3>📦 Lagerbestand & Warenwert</h3>
-            <div id="inventory-list"></div>
-            <div id="warehouse-value" style="font-size: 12px; color: #28a745; margin-top: 10px; text-align: right;">Warenwert: 0,00 €</div>
-            <hr style="border: 0; border-top: 1px solid #444; margin: 15px 0;">
-            <label>Neues Material Name:</label>
-            <input type="text" id="new_name" placeholder="z.B. PLA Schwarz">
-            <div class="grid">
-                <div><label>Preis (€/kg)</label><input type="number" id="new_price" step="0.01" placeholder="25.00"></div>
-                <div><label>Bestand (g)</label><input type="number" id="new_stock" placeholder="1000"></div>
-            </div>
-            <label>Mindestbestand (Warnung bei weniger als... g)</label>
-            <input type="number" id="new_min" placeholder="100" value="100">
-            <button class="btn-add" onclick="addMaterial()">+ Material hinzufügen</button>
-        </div>
+<div class="section">
+<h3>📦 Lagerbestand & Warenwert</h3>
+<div id="inventory-list"></div>
+<div id="warehouse-value" style="font-size: 12px; color: #28a745; margin-top: 10px; text-align: right;">Warenwert: 0,00 €</div>
+<hr style="border: 0; border-top: 1px solid #444; margin: 15px 0;">
+<label>Neues Material Name:</label>
+<input type="text" id="new_name" placeholder="z.B. PLA Schwarz">
+<div class="grid">
+<div><label>Preis (€/kg)</label><input type="number" id="new_price" step="0.01" placeholder="25.00"></div>
+<div><label>Bestand (g)</label><input type="number" id="new_stock" placeholder="1000"></div>
+</div>
+<label>Mindestbestand (Warnung bei weniger als... g)</label>
+<input type="number" id="new_min" placeholder="100" value="100">
+<button class="btn-add" onclick="addMaterial()">+ Material hinzufügen</button>
+</div>
 
-        <div class="section">
-            <h3>🚀 Projekt-Kalkulation</h3>
-           
-            <label>Projektname / Kunde:</label>
-            <input type="text" id="calc_project_name" placeholder="z.B. Huber - Rahmenhalter">
+<div class="section">
+<h3>🚀 Projekt-Kalkulation</h3>
 
-            <label>Material 1 (Haupt):</label>
-            <div class="grid">
-                <select id="mat_0"></select>
-                <input type="number" id="gram_0" placeholder="Gramm">
-            </div>
+<label>Projektname / Kunde:</label>
+<input type="text" id="calc_project_name" placeholder="z.B. Huber - Rahmenhalter">
 
-            <label class="multi-label">Zusatzmaterialien (Multicolor/Support):</label>
-            <div class="grid" style="margin-bottom: 4px;">
-                <select id="mat_1"></select>
-                <input type="number" id="gram_1" placeholder="Gramm">
-            </div>
-            <div class="grid" style="margin-bottom: 4px;">
-                <select id="mat_2"></select>
-                <input type="number" id="gram_2" placeholder="Gramm">
-            </div>
-            <div class="grid">
-                <select id="mat_3"></select>
-                <input type="number" id="gram_3" placeholder="Gramm">
-            </div>
-           
-            <div class="grid">
-                <div><label>Druckzeit (h)</label><input type="number" id="calc_h" placeholder="4"></div>
-                <div><label>Arbeit (min)</label><input type="number" id="calc_min" placeholder="15"></div>
-            </div>
-            <label>Stundenlohn (€/h)</label>
-            <input type="number" id="calc_wage" value="30">
-           
-            <button class="btn-calc" onclick="calculate(false)">Nur Preis berechnen</button>
-            <button class="btn-order" onclick="calculate(true)">Auftrag bestätigen & Abbuchen</button>
-            <div id="order-success" class="success-msg">✅ Auftrag gebucht & Bestände korrigiert!</div>
-        </div>
+<label>Materialien (Haupt & Zusatz):</label>
+<div class="grid" style="margin-bottom: 4px;">
+<select id="mat_0"></select>
+<input type="number" id="gram_0" placeholder="Gramm">
+</div>
+<div class="grid" style="margin-bottom: 4px;">
+<select id="mat_1"></select>
+<input type="number" id="gram_1" placeholder="Gramm">
+</div>
+<div class="grid" style="margin-bottom: 4px;">
+<select id="mat_2"></select>
+<input type="number" id="gram_2" placeholder="Gramm">
+</div>
 
-        <div id="res" class="total-box" style="display:none;">
-            <span style="color: #888; font-size: 12px;">GESAMT-ANGEBOTSPREIS:</span>
-            <span id="total_price" class="price-tag">0,00 €</span>
-        </div>
+<label>Druckzeit & Arbeit:</label>
+<div class="grid">
+<div><label>Stunden</label><input type="number" id="calc_h" placeholder="0" value="0"></div>
+<div><label>Minuten</label><input type="number" id="calc_m_print" placeholder="30" value="0"></div>
+</div>
+<div class="grid">
+<div><label>Arbeit (min)</label><input type="number" id="calc_min_labor" placeholder="15"></div>
+<div><label>Lohn (€/h)</label><input type="number" id="calc_wage" value="30"></div>
+</div>
 
-        <div class="section">
-            <h3>📜 Historie</h3>
-            <div id="history-list" class="history-list">
-                <div style="color: #666; font-size: 12px; text-align: center; padding: 10px;">Noch keine Einträge.</div>
-            </div>
-            <button onclick="clearHistory()" style="background: none; color: #ff4444; font-size: 10px; padding: 5px; margin-top: 10px; width: auto; font-weight: normal;">Historie löschen</button>
-        </div>
-    </div>
+<label>Verpackung & Versand:</label>
+<div class="grid">
+<div><label>Verpackung (€)</label><input type="number" id="calc_pack" step="0.01" placeholder="0.50"></div>
+<div><label>Versand (€)</label><input type="number" id="calc_ship" step="0.01" placeholder="5.49"></div>
+</div>
 
-    <script>
-        // "minStock" wird als neues Attribut in den Objekten gespeichert
-        let inventory = JSON.parse(localStorage.getItem('d3d_inv')) || [];
-        let history = JSON.parse(localStorage.getItem('d3d_history')) || [];
+<label>Marge / Puffer / Fehler (%)</label>
+<input type="number" id="calc_margin" value="15">
 
-        function updateUI() {
-            const list = document.getElementById('inventory-list');
-            const selects = [document.getElementById('mat_0'), document.getElementById('mat_1'), document.getElementById('mat_2'), document.getElementById('mat_3')];
-            const histList = document.getElementById('history-list');
-           
-            list.innerHTML = '';
-            selects.forEach(s => s.innerHTML = '<option value="">-- Wählen --</option>');
-           
-            let totalVal = 0;
+<button class="btn-calc" onclick="calculate(false)">Nur Preis berechnen</button>
+<button class="btn-order" onclick="calculate(true)">Auftrag bestätigen & Abbuchen</button>
+<div id="order-success" class="success-msg">✅ Auftrag gebucht & Bestände korrigiert!</div>
+</div>
 
-            inventory.forEach((item, index) => {
-                // Falls kein Mindestbestand definiert war, Standard 100 nutzen
-                const minLimit = item.minStock || 100;
-                const isLow = item.stock < minLimit;
-                
-                const div = document.createElement('div');
-                div.className = 'inventory-item' + (isLow ? ' warning' : '');
-               
-                div.innerHTML = `
-                    <div class="item-info">
-                        <strong>${item.name}</strong><br>
-                        ${item.stock}g (${item.price}€/kg) <span style="font-size:9px; opacity:0.7;">(Min: ${minLimit}g)</span>
-                    </div>
-                    <div class="item-actions">
-                        <button class="action-btn refill-btn" onclick="refillItem(${index})">+</button>
-                        <button class="action-btn settings-btn" onclick="changeMinStock(${index})">⚙️</button>
-                        <button class="action-btn delete-btn" onclick="deleteItem(${index})">✕</button>
-                    </div>`;
-                list.appendChild(div);
+<div id="res" class="total-box" style="display:none;">
+<span style="color: #888; font-size: 12px;">GESAMT-ANGEBOTSPREIS:</span>
+<span id="total_price" class="price-tag">0,00 €</span>
+</div>
 
-                selects.forEach(s => s.options.add(new Option(`${item.name} (${item.stock}g)`, index)));
-                totalVal += (item.stock / 1000) * item.price;
-            });
+<div class="section">
+<h3>📜 Historie</h3>
+<div id="history-list" class="history-list">
+<div style="color: #666; font-size: 12px; text-align: center; padding: 10px;">Noch keine Einträge.</div>
+</div>
+<button onclick="clearHistory()" style="background: none; color: #ff4444; font-size: 10px; padding: 5px; margin-top: 10px; width: auto; font-weight: normal;">Historie löschen</button>
+</div>
+</div>
 
-            if (history.length > 0) {
-                histList.innerHTML = '';
-                history.slice().reverse().forEach(entry => {
-                    const hDiv = document.createElement('div');
-                    hDiv.className = 'history-item';
-                    hDiv.innerHTML = `<div><strong>${entry.project || 'Unbenanntes Projekt'}</strong><br><span style="font-size:10px; color:#aaa">${entry.mat}</span><br><span class="history-date">${entry.date}</span></div>
-                                      <div style="color: #00d4ff; font-weight: bold;">${entry.price}</div>`;
-                    histList.appendChild(hDiv);
-                });
-            }
+<script>
+let inventory = JSON.parse(localStorage.getItem('d3d_inv')) || [];
+let history = JSON.parse(localStorage.getItem('d3d_history')) || [];
 
-            document.getElementById('warehouse-value').innerText = `Warenwert Lager: ${totalVal.toFixed(2)} €`;
-            localStorage.setItem('d3d_inv', JSON.stringify(inventory));
-            localStorage.setItem('d3d_history', JSON.stringify(history));
-        }
+function updateUI() {
+const list = document.getElementById('inventory-list');
+const selects = [document.getElementById('mat_0'), document.getElementById('mat_1'), document.getElementById('mat_2')];
+const histList = document.getElementById('history-list');
 
-        function addMaterial() {
-            const name = document.getElementById('new_name').value;
-            const price = parseFloat(document.getElementById('new_price').value);
-            const stock = parseFloat(document.getElementById('new_stock').value);
-            const minStock = parseFloat(document.getElementById('new_min').value) || 100;
-            
-            if(name && !isNaN(price)) {
-                inventory.push({name, price, stock: stock || 0, minStock: minStock});
-                document.getElementById('new_name').value = '';
-                document.getElementById('new_price').value = '';
-                document.getElementById('new_stock').value = '';
-                updateUI();
-            }
-        }
+list.innerHTML = '';
+selects.forEach(s => s.innerHTML = '<option value="">-- Material wählen --</option>');
 
-        function changeMinStock(index) {
-            const currentMin = inventory[index].minStock || 100;
-            const newMin = prompt(`Neuer Mindestbestand für ${inventory[index].name} (g):`, currentMin);
-            if (newMin !== null && !isNaN(newMin)) {
-                inventory[index].minStock = parseFloat(newMin);
-                updateUI();
-            }
-        }
+let totalVal = 0;
 
-        function refillItem(index) {
-            const amount = prompt(`Menge für ${inventory[index].name} (g):`, "1000");
-            if (amount) { inventory[index].stock += parseFloat(amount); updateUI(); }
-        }
+inventory.forEach((item, index) => {
+const minLimit = item.minStock || 100;
+const isLow = item.stock < minLimit;
 
-        function deleteItem(index) {
-            if(confirm("Material löschen?")) { inventory.splice(index, 1); updateUI(); }
-        }
+const div = document.createElement('div');
+div.className = 'inventory-item' + (isLow ? ' warning' : '');
+div.innerHTML = `
+<div class="item-info">
+<strong>${item.name}</strong><br>
+${item.stock}g (${item.price}€/kg) <span style="font-size:9px; opacity:0.7;">(Min: ${minLimit}g)</span>
+</div>
+<div class="item-actions">
+<button class="action-btn refill-btn" onclick="refillItem(${index})">+</button>
+<button class="action-btn settings-btn" onclick="changeMinStock(${index})">⚙️</button>
+<button class="action-btn delete-btn" onclick="deleteItem(${index})">✕</button>
+</div>`;
+list.appendChild(div);
 
-        function calculate(doDeduct) {
-            let matCosts = 0;
-            let usedMatsInfo = [];
-            let deductionList = [];
+selects.forEach(s => s.options.add(new Option(`${item.name} (${item.stock}g)`, index)));
+totalVal += (item.stock / 1000) * item.price;
+});
 
-            for(let i=0; i<4; i++) {
-                const idx = document.getElementById(`mat_${i}`).value;
-                const gram = parseFloat(document.getElementById(`gram_${i}`).value) || 0;
-                if(idx !== "" && gram > 0) {
-                    const mat = inventory[idx];
-                    matCosts += (gram / 1000) * mat.price;
-                    usedMatsInfo.push(`${mat.name} (${gram}g)`);
-                    deductionList.push({index: idx, amount: gram});
-                }
-            }
+if (history.length > 0) {
+histList.innerHTML = '';
+history.slice().reverse().forEach(entry => {
+const hDiv = document.createElement('div');
+hDiv.className = 'history-item';
+hDiv.innerHTML = `<div><strong>${entry.project || 'Unbenanntes Projekt'}</strong><br><span style="font-size:10px; color:#aaa">${entry.mat}</span><br><span class="history-date">${entry.date}</span></div>
+<div style="color: #00d4ff; font-weight: bold;">${entry.price}</div>`;
+histList.appendChild(hDiv);
+});
+}
 
-            if(usedMatsInfo.length === 0) return alert("Mindestens 1 Material wählen!");
+document.getElementById('warehouse-value').innerText = `Warenwert Lager: ${totalVal.toFixed(2)} €`;
+localStorage.setItem('d3d_inv', JSON.stringify(inventory));
+localStorage.setItem('d3d_history', JSON.stringify(history));
+}
 
-            const h = parseFloat(document.getElementById('calc_h').value) || 0;
-            const min = parseFloat(document.getElementById('calc_min').value) || 0;
-            const wage = parseFloat(document.getElementById('calc_wage').value) || 30;
-            const project = document.getElementById('calc_project_name').value;
+function addMaterial() {
+const name = document.getElementById('new_name').value;
+const price = parseFloat(document.getElementById('new_price').value);
+const stock = parseFloat(document.getElementById('new_stock').value);
+const minStock = parseFloat(document.getElementById('new_min').value) || 100;
 
-            let energy = h * 0.15 * 0.40;
-            let wear = h * 0.60;
-            let labor = (min / 60) * wage;
-            let total = (matCosts + energy + wear + labor) * 1.15;
+if(name && !isNaN(price)) {
+inventory.push({name, price, stock: stock || 0, minStock: minStock});
+document.getElementById('new_name').value = '';
+document.getElementById('new_price').value = '';
+document.getElementById('new_stock').value = '';
+updateUI();
+}
+}
 
-            const formattedPrice = total.toLocaleString('de-DE', {style:'currency', currency:'EUR'});
-            document.getElementById('total_price').innerText = formattedPrice;
-            document.getElementById('res').style.display = 'block';
+function refillItem(index) {
+const amount = prompt(`Menge für ${inventory[index].name} (g):`, "1000");
+if (amount) { inventory[index].stock += parseFloat(amount); updateUI(); }
+}
 
-            if(doDeduct) {
-                deductionList.forEach(item => {
-                    inventory[item.index].stock = Math.max(0, inventory[item.index].stock - item.amount);
-                });
-               
-                const now = new Date();
-                history.push({
-                    project: project,
-                    mat: usedMatsInfo.join(", "),
-                    price: formattedPrice,
-                    date: now.toLocaleString('de-DE', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'})
-                });
-               
-                if(history.length > 25) history.shift();
-                updateUI();
-                document.getElementById('order-success').style.display = 'block';
-                setTimeout(() => { document.getElementById('order-success').style.display = 'none'; }, 3000);
-            }
-        }
+function changeMinStock(index) {
+const currentMin = inventory[index].minStock || 100;
+const newMin = prompt(`Neuer Mindestbestand für ${inventory[index].name} (g):`, currentMin);
+if (newMin !== null && !isNaN(newMin)) {
+inventory[index].minStock = parseFloat(newMin);
+updateUI();
+}
+}
 
-        function clearHistory() { if(confirm("Historie leeren?")) { history = []; updateUI(); } }
-        window.onload = updateUI;
-    </script>
+function deleteItem(index) {
+if(confirm("Material löschen?")) { inventory.splice(index, 1); updateUI(); }
+}
+
+function calculate(doDeduct) {
+let matCosts = 0;
+let usedMatsInfo = [];
+let deductionList = [];
+
+for(let i=0; i<3; i++) {
+const idx = document.getElementById(`mat_${i}`).value;
+const gram = parseFloat(document.getElementById(`gram_${i}`).value) || 0;
+if(idx !== "" && gram > 0) {
+const mat = inventory[idx];
+matCosts += (gram / 1000) * mat.price;
+usedMatsInfo.push(`${mat.name} (${gram}g)`);
+deductionList.push({index: idx, amount: gram});
+}
+}
+
+if(usedMatsInfo.length === 0) return alert("Mindestens 1 Material wählen!");
+
+// Zeiten
+const h_print = parseFloat(document.getElementById('calc_h').value) || 0;
+const m_print = parseFloat(document.getElementById('calc_m_print').value) || 0;
+const total_print_hours = h_print + (m_print / 60);
+
+const min_labor = parseFloat(document.getElementById('calc_min_labor').value) || 0;
+const wage = parseFloat(document.getElementById('calc_wage').value) || 30;
+
+// Sonstige Kosten
+const pack = parseFloat(document.getElementById('calc_pack').value) || 0;
+const ship = parseFloat(document.getElementById('calc_ship').value) || 0;
+const margin = parseFloat(document.getElementById('calc_margin').value) || 0;
+
+// Kalkulation (Energie & Verschleiß basieren auf Druckzeit)
+let energy = total_print_hours * 0.15 * 0.40;
+let wear = total_print_hours * 0.60;
+let labor = (min_labor / 60) * wage;
+
+// Grundpreis vor Marge/Versand
+let subtotal = matCosts + energy + wear + labor + pack;
+
+// Marge anwenden
+let total = subtotal * (1 + (margin / 100));
+
+// Versand wird meist ohne Marge aufgeschlagen
+total += ship;
+
+const project = document.getElementById('calc_project_name').value;
+const formattedPrice = total.toLocaleString('de-DE', {style:'currency', currency:'EUR'});
+document.getElementById('total_price').innerText = formattedPrice;
+document.getElementById('res').style.display = 'block';
+
+if(doDeduct) {
+deductionList.forEach(item => {
+inventory[item.index].stock = Math.max(0, inventory[item.index].stock - item.amount);
+});
+
+const now = new Date();
+history.push({
+project: project,
+mat: usedMatsInfo.join(", "),
+price: formattedPrice,
+date: now.toLocaleString('de-DE', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'})
+});
+
+if(history.length > 25) history.shift();
+updateUI();
+document.getElementById('order-success').style.display = 'block';
+setTimeout(() => { document.getElementById('order-success').style.display = 'none'; }, 3000);
+}
+}
+
+function clearHistory() { if(confirm("Historie leeren?")) { history = []; updateUI(); } }
+window.onload = updateUI;
+</script>
 </body>
 </html>
